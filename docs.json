@@ -122,6 +122,7 @@
     }
   },
   "background": {
-    "decoration": "windows"
+    "decoration": "windows",
+    "image": "/images/hero-dark.png"
   }
 }

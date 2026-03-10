@@ -86,7 +86,8 @@
   },
   "logo": {
     "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "dark": "/logo/dark.svg",
+    "href": "https://cdn.waffo.com/portal/logo.png"
   },
   "navbar": {
     "links": [

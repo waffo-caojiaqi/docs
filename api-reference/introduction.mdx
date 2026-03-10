@@ -1,33 +1,41 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: 'API Reference'
+description: 'Waffo Acquiring API — cross-border payment endpoints for order management and merchant configuration'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Base URL
 
-## Welcome
+All API requests should be made to your assigned Waffo endpoint. Contact your integration manager for your production base URL.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
-
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+```
+https://<your-waffo-endpoint>
+```
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All requests must be signed using your **Merchant ID** and **API Key**. Refer to the [API Security](/integration/api-security) guide for the full signature algorithm.
+
+## Request Format
+
+- All endpoints accept `application/json` request bodies
+- All endpoints use `POST` method
+- Timestamps follow **ISO 8601** format (e.g. `2024-01-01T00:00:00.000Z`)
+
+## Response Format
+
+Every response wraps the payload in a standard envelope:
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+{
+  "code": "SUCCESS",
+  "msg": "OK",
+  "data": { ... }
+}
 ```
+
+## Endpoints
+
+| Group | Endpoints |
+|-------|-----------|
+| **Order Management** | Create, Inquiry, Cancel, Refund, Refund Inquiry |
+| **Configuration** | Merchant Config, Pay Method Config |

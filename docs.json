@@ -1,7 +1,8 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "sequoia",
-  "name": "Mint Starter Kit",
+  "name": "Waffo",
+  "openapi": "api-reference/openapi.json",
   "colors": {
     "primary": "#16A34A",
     "light": "#07C983",
@@ -14,12 +15,7 @@
         {
           "anchor": "Documentation",
           "icon": "book-open-cover",
-          "href": "https://mintlify.com/docs"
-        },
-        {
-          "anchor": "Blog",
-          "icon": "newspaper",
-          "href": "https://mintlify.com/blog"
+          "href": "https://docs.flowjizhang.top"
         }
       ]
     },
@@ -29,7 +25,6 @@
         "groups": [
           {
             "group": "Getting started",
-            "tag": "Test Tag",
             "pages": [
               "index",
               "quickstart",
@@ -51,33 +46,33 @@
               "essentials/images",
               "essentials/reusable-snippets"
             ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
-            ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Overview",
             "pages": [
               "api-reference/introduction"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Order Management",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              { "openapi": "POST /api/v1/order/create" },
+              { "openapi": "POST /api/v1/order/inquiry" },
+              { "openapi": "POST /api/v1/order/cancel" },
+              { "openapi": "POST /api/v1/order/refund" },
+              { "openapi": "POST /api/v1/refund/inquiry" }
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              { "openapi": "POST /api/v1/merchantconfig/inquiry" },
+              { "openapi": "POST /api/v1/paymethodconfig/inquiry" }
             ]
           }
         ]
@@ -86,39 +81,32 @@
   },
   "logo": {
     "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg",
-    "href": "https://cdn.waffo.com/portal/logo.png"
+    "dark": "/logo/dark.svg"
   },
   "navbar": {
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:support@waffo.com"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "href": "https://portal.waffo.com"
     }
   },
   "contextual": {
     "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+      "copy",
+      "view",
+      "chatgpt",
+      "claude"
+    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/waffo"
     }
   },
   "background": {

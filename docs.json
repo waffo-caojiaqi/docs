@@ -122,7 +122,6 @@
     }
   },
   "background": {
-    "decoration": "windows",
-    "image": "/images/hero-dark.png"
+    "decoration": "gradient"
   }
 }

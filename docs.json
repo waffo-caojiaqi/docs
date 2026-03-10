@@ -4,9 +4,9 @@
   "name": "Waffo",
   "openapi": "api-reference/openapi.json",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#2C8CFF",
+    "light": "#27CCFF",
+    "dark": "#1A6ED8"
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -51,31 +51,7 @@
       },
       {
         "tab": "API Reference",
-        "groups": [
-          {
-            "group": "Overview",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Order Management",
-            "pages": [
-              { "openapi": "POST /api/v1/order/create" },
-              { "openapi": "POST /api/v1/order/inquiry" },
-              { "openapi": "POST /api/v1/order/cancel" },
-              { "openapi": "POST /api/v1/order/refund" },
-              { "openapi": "POST /api/v1/refund/inquiry" }
-            ]
-          },
-          {
-            "group": "Configuration",
-            "pages": [
-              { "openapi": "POST /api/v1/merchantconfig/inquiry" },
-              { "openapi": "POST /api/v1/paymethodconfig/inquiry" }
-            ]
-          }
-        ]
+        "openapi": "api-reference/openapi.json"
       }
     ]
   },

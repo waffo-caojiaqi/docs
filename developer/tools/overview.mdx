@@ -1,0 +1,75 @@
+---
+title: "工具概览"
+description: "Waffo 开发者工具集合，包括测试工具、错误码查询、Postman 集成和 SDK 下载。"
+---
+
+## 测试工具
+
+Waffo 沙盒环境提供以下测试工具帮助您快速验证集成：
+
+**测试卡号：**
+
+| 卡号 | 场景 |
+|------|------|
+| 4242 4242 4242 4242 | 支付成功（Visa） |
+| 5555 5555 5555 4444 | 支付成功（Mastercard） |
+| 4000 0000 0000 0002 | 卡片拒绝（card_declined） |
+| 4000 0000 0000 9995 | 余额不足（insufficient_funds） |
+| 4000 0025 0000 3155 | 需要 3DS 2.0 验证 |
+| 4000 0000 0000 3220 | 3DS 验证失败 |
+| 4000 0000 0000 0077 | 支付成功但立即触发争议 |
+
+测试卡的到期日可使用任意未来日期，CVV 填写任意 3 位数字，账单地址可填写任意美国邮编（如 12345）。
+
+**Webhook 测试：**
+
+在沙盒环境的商户 Portal 中，可手动触发任意 Webhook 事件发送至您配置的端点，方便本地调试而无需真实触发支付流程。
+
+## 错误码查询
+
+商户 Portal 内置错误码查询工具，支持按错误码、关键词或分类搜索，每个错误码附有详细说明和推荐处理建议：
+
+- **网络/系统错误**：如请求超时、服务不可用等
+- **认证错误**：API Key 无效、权限不足等
+- **支付失败错误**：发卡行拒绝、卡号无效、余额不足等
+- **业务逻辑错误**：金额超限、订单重复、参数格式错误等
+
+## 状态码说明
+
+Waffo API 使用标准 HTTP 状态码：
+
+| 状态码 | 说明 |
+|--------|------|
+| 200 | 请求成功 |
+| 201 | 资源创建成功 |
+| 400 | 请求参数错误 |
+| 401 | 认证失败（API Key 无效） |
+| 403 | 权限不足 |
+| 404 | 资源不存在 |
+| 409 | 资源冲突（如订单号重复） |
+| 422 | 业务逻辑错误（参数格式正确但业务校验失败） |
+| 429 | 请求频率超限（Rate Limit） |
+| 500 | 服务器内部错误 |
+
+## Postman集成
+
+Waffo 提供官方 Postman Collection，内置所有 API 接口的请求示例和环境变量配置：
+
+1. 下载 [Waffo Postman Collection](https://api.waffo.com/postman-collection.json)
+2. 在 Postman 中导入 Collection 和 Environment 文件
+3. 配置 `api_key` 环境变量（使用您的沙盒 API Key）
+4. 直接运行请求，无需手动填写请求头
+
+## SDK下载
+
+Waffo 官方 SDK 支持以下语言，提供类型安全的 API 封装、Webhook 签名验证和错误处理：
+
+| 语言 | 版本 | 安装方式 |
+|------|------|---------|
+| Node.js / TypeScript | 最新稳定版 | `npm install @waffo/node` |
+| Python | 最新稳定版 | `pip install waffo` |
+| PHP | 最新稳定版 | `composer require waffo/waffo-php` |
+| Java | 最新稳定版 | Maven / Gradle |
+| Go | 最新稳定版 | `go get github.com/waffo/waffo-go` |
+
+所有 SDK 均托管在 [Waffo GitHub 组织](https://github.com/waffo-org)，如遇问题可直接提交 Issue 或联系 Waffo 技术支持。

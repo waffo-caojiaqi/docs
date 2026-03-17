@@ -21,45 +21,118 @@
     },
     "tabs": [
       {
-        "tab": "Products & Services",
+        "tab": "产品与服务",
         "groups": [
           {
             "group": "Overview",
             "pages": ["index"]
           },
           {
-            "group": "Acquiring & Payments",
+            "group": "收单支付",
             "pages": [
-              "products/subscription-recurring"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Integration Guide",
-        "groups": [
-          {
-            "group": "Getting started",
-            "pages": [
-              "quickstart",
-              "development"
+              "products/acquiring/overview",
+              "products/acquiring/one-time-payment",
+              "products/acquiring/subscription",
+              "products/acquiring/checkout",
+              "products/acquiring/payment-methods"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Payout 代发",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets",
-              "essentials/custom-components"
+              "products/payout/overview",
+              "products/payout/methods"
+            ]
+          },
+          {
+            "group": "结算与资金管理",
+            "pages": [
+              "products/settlement/merchant-settlement",
+              "products/settlement/fx",
+              "products/settlement/tax"
+            ]
+          },
+          {
+            "group": "风控与合规",
+            "pages": [
+              "products/risk/security",
+              "products/risk/disputes"
+            ]
+          },
+          {
+            "group": "增值服务",
+            "pages": [
+              "products/value-added/data-analytics",
+              "products/value-added/merchant-portal",
+              "products/value-added/tokenization",
+              "products/value-added/auth-capture"
             ]
           }
         ]
       },
       {
-        "tab": "API Reference",
-        "openapi": "api-reference/openapi.json"
+        "tab": "解决方案",
+        "groups": [
+          {
+            "group": "按行业",
+            "pages": [
+              "solutions/industries/digital-entertainment",
+              "solutions/industries/ecommerce",
+              "solutions/industries/content-providers"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "开发者中心",
+        "groups": [
+          {
+            "group": "集成方式",
+            "pages": [
+              "developer/integration/quickstart",
+              "developer/integration/checkout-integration",
+              "developer/integration/api-integration",
+              "developer/integration/frontend-components"
+            ]
+          },
+          {
+            "group": "API 参考",
+            "pages": [
+              "developer/api/one-time-payment",
+              "developer/api/subscription",
+              "developer/api/payout",
+              "developer/api/common"
+            ]
+          },
+          {
+            "group": "工具与资源",
+            "pages": [
+              "developer/tools/testing",
+              "developer/tools/error-codes",
+              "developer/tools/status-codes",
+              "developer/tools/postman",
+              "developer/tools/sdk"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "定价",
+        "groups": [
+          {
+            "group": "定价方案",
+            "pages": ["pricing/overview"]
+          }
+        ]
+      },
+      {
+        "tab": "支持",
+        "groups": [
+          {
+            "group": "帮助中心",
+            "pages": ["support/overview"]
+          }
+        ]
       }
     ]
   },

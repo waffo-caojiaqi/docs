@@ -1,0 +1,168 @@
+---
+title: "一次性支付"
+description: "每笔独立结算的单次支付模式，支持全球主流支付方式，适用于商品购买与服务付费场景"
+---
+
+## 产品介绍
+
+一次性支付（One-time Payment）是针对单笔交易设计的支付模式。每次支付均为独立的交易，不存在周期性扣款或自动续费。适用于商品购买、服务付费、活动报名等一次性消费场景。
+
+与订阅支付不同，一次性支付无需预存卡信息，用户每次均主动发起支付授权，安全性更高，用户感知也更为明确。
+
+### 核心能力
+
+<CardGroup cols={2}>
+  <Card title="多支付方式统一接入" icon="credit-card">
+    通过单一接口同时支持银行卡、数字钱包、本地转账等多种支付方式，无需分别集成各渠道。
+  </Card>
+  <Card title="实时交易状态可见" icon="eye">
+    支付发起后，交易状态实时同步至商户系统，通过 Webhook 即时通知支付结果，确保业务流程无缝衔接。
+  </Card>
+  <Card title="集中化管理平台" icon="table-columns">
+    商户 Portal 提供完整的交易查询、退款操作、对账报表功能，支持多维度筛选与数据导出。
+  </Card>
+  <Card title="灵活的收银台选项" icon="palette">
+    提供 Hosted（跳转）与 Embedded（嵌入）两种集成方式，均支持品牌 Logo、色彩主题等定制配置。
+  </Card>
+</CardGroup>
+
+## 支持的支付方式
+
+| 类型 | 支付方式 |
+|------|----------|
+| 国际银行卡 | Visa、Mastercard、American Express、JCB、UnionPay |
+| 移动支付 | Apple Pay、Google Pay |
+| 中国支付 | Alipay（支付宝）、WeChat Pay（微信支付） |
+| 欧洲本地 | SEPA、iDEAL、Bancontact |
+| 银行转账 | 本地银行实时转账（支持多国） |
+
+<Info>
+支持的支付方式因地区和商户资质而异，具体开通情况请咨询 Waffo 商务团队。
+</Info>
+
+## 业务流程以及 UI
+
+### 标准支付流程
+
+<Steps>
+  <Step title="创建支付意向">
+    商户服务端调用 Waffo API 创建 PaymentIntent，获取 `client_secret`，用于后续前端初始化。
+  </Step>
+  <Step title="初始化前端组件">
+    将 `client_secret` 安全传递至前端，初始化 Waffo Checkout 或 Payment Element 组件，展示支付表单。
+  </Step>
+  <Step title="用户完成支付">
+    用户选择支付方式、填写卡信息（或选择已保存的支付方式）并确认支付。部分支付方式需要完成 3DS 验证。
+  </Step>
+  <Step title="接收支付结果">
+    Waffo 通过 Webhook 向商户服务端推送支付状态变更事件，商户根据结果更新订单状态并完成业务流程。
+  </Step>
+</Steps>
+
+### 支付状态流转
+
+```
+created → processing → succeeded
+                    ↘ failed
+                    ↘ requires_action (3DS)
+```
+
+## 集成模式选择
+
+### Hosted（跳转式收银台）
+
+用户被重定向至 Waffo 托管的安全域名完成支付，商户无需处理卡片数据。
+
+**适合场景**：快速上线、安全合规要求高、开发资源有限的商户
+
+```bash
+# 创建 Checkout Session 后重定向用户
+redirect_url = "https://checkout.waffo.com/pay/{session_id}"
+```
+
+### Embedded（嵌入式组件）
+
+通过 JavaScript SDK 将支付表单直接嵌入商户页面，用户全程无需离开商户域。
+
+**适合场景**：品牌一致性要求高、需要深度定制交互体验的商户
+
+```javascript
+const checkout = waffoPayment.initCheckout({
+  clientSecret: 'cs_xxx',
+  successUrl: 'https://example.com/success',
+  cancelUrl: 'https://example.com/cancel'
+});
+checkout.mount('#checkout-container');
+```
+
+<Tip>
+两种模式均支持品牌定制。Embedded 模式提供更高的 UI 定制自由度，而 Hosted 模式则由 Waffo 负责维护 PCI 合规性，降低商户合规压力。
+</Tip>
+
+## 快速开始
+
+### 前置条件
+
+- 已完成 Waffo 商户入网（KYB）
+- 已获取 API 密钥（`pk_test_xxx` / `sk_test_xxx`）
+
+### 步骤一：服务端创建 PaymentIntent
+
+```javascript
+// Node.js 示例
+const waffo = require('@waffo/node')(process.env.WAFFO_SECRET_KEY);
+
+const paymentIntent = await waffo.paymentIntents.create({
+  amount: 10000,        // 金额（最小货币单位，如分）
+  currency: 'usd',
+  payment_method_types: ['card', 'alipay'],
+  metadata: {
+    order_id: 'order_12345'
+  }
+});
+
+// 将 client_secret 安全传递至前端（切勿在前端代码中硬编码 Secret Key）
+res.json({ clientSecret: paymentIntent.client_secret });
+```
+
+### 步骤二：前端初始化并挂载
+
+```javascript
+const waffoPayment = new WaffoPayment({
+  apiKey: 'pk_test_xxx',
+  environment: 'test'
+});
+
+const checkout = waffoPayment.initCheckout({
+  clientSecret: clientSecret,  // 从服务端获取
+  successUrl: window.location.origin + '/payment-success',
+  cancelUrl: window.location.origin + '/cart'
+});
+
+checkout.mount('#checkout-container');
+```
+
+### 步骤三：配置 Webhook 接收支付结果
+
+```javascript
+// 接收 payment_intent.succeeded 事件
+app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
+  const event = waffo.webhooks.constructEvent(
+    req.body,
+    req.headers['waffo-signature'],
+    process.env.WAFFO_WEBHOOK_SECRET
+  );
+
+  if (event.type === 'payment_intent.succeeded') {
+    const paymentIntent = event.data.object;
+    // 更新订单状态为已付款
+    fulfillOrder(paymentIntent.metadata.order_id);
+  }
+
+  res.json({ received: true });
+});
+```
+
+<Warning>
+请勿在前端代码中直接使用 Secret Key（`sk_xxx`）。Secret Key 必须仅在服务端使用，防止密钥泄露导致安全风险。
+</Warning>

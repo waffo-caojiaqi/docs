@@ -1,0 +1,26 @@
+---
+title: "Tokenization"
+description: "Waffo Token 化技术，安全存储支付方式并支持免输入重复支付。"
+---
+
+## Token管理
+
+Waffo Tokenization（Token 化）技术将用户的支付信息（如银行卡号）转换为唯一的不可逆 Token，安全存储在 Waffo 的 PCI DSS 合规环境中。商户只需持有 Token，即可代表对应的支付方式发起交易，无需接触原始敏感卡数据，从根本上降低数据泄露风险。
+
+Token 管理功能包括：
+
+- **Token 创建**：用户首次支付时自动生成 Token，或通过专用的卡绑定接口主动创建
+- **Token 查询**：查询 Token 对应的支付方式类型、卡品牌、末四位等脱敏信息
+- **Token 删除**：用户解绑支付方式时注销对应 Token，后续无法再用于支付
+- **Token 有效期管理**：Waffo 自动处理卡片续期更新（Network Token），确保 Token 长期有效
+
+## Token支付
+
+持有有效 Token 的商户可以发起以下操作：
+
+- **重复支付（Recurring Payment）**：订阅续费、分期扣款等无需用户在场的自动扣款场景
+- **一键支付（One-click Payment）**：用户已绑卡的情况下，直接确认即可完成支付，无需再次输入卡信息
+- **MIT（商户发起交易）**：商户根据业务需要主动发起的扣款，如延迟支付、账单支付等
+- **跨设备支付**：用户在不同设备上使用相同绑定的支付方式，无需重复输入
+
+Token 支付需要在创建订单时传入 Token ID 并标明交易类型（首次/重复），Waffo 会根据卡组织规则自动处理 3DS 认证豁免逻辑。详细 API 参数请参阅[一次性支付 API](/developer/api/one-time-payment) 和[订阅支付 API](/developer/api/subscription) 文档。

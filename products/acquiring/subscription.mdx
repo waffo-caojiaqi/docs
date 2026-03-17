@@ -1,0 +1,154 @@
+---
+title: "订阅支付 / 自动扣款"
+description: "基于持卡人授权的周期性自动扣款方案，支持灵活订阅周期，适用于 SaaS、流媒体、会员服务"
+---
+
+## 产品介绍
+
+订阅支付（Subscription / Recurring Payment）是基于持卡人预授权的周期性自动扣款服务。用户在首次付款时授权商户按约定周期发起后续扣款，无需每次手动确认，极大提升用户留存与付费体验。
+
+Waffo 订阅支付完整支持 CIT（持卡人发起交易）与 MIT（商户发起交易）两种模式，满足不同订阅计费场景下的合规要求。
+
+## 订阅模式说明
+
+### CIT（Cardholder-Initiated Transaction）持卡人发起
+
+用户主动触发的交易，通常是订阅的首次扣款或用户手动续费。此类交易需要持卡人实时在场并完成 3DS 验证。
+
+### MIT（Merchant-Initiated Transaction）商户发起
+
+基于持卡人事先授权，由商户系统在后台自动发起的周期性扣款，无需持卡人在场。MIT 交易免除 3DS 验证，但必须基于有效的授权协议（Mandate）。
+
+| 特性 | CIT | MIT |
+|------|-----|-----|
+| 持卡人在场 | 必须 | 不需要 |
+| 3DS 验证 | 必须 | 豁免 |
+| 典型场景 | 首次订阅、手动续费 | 月费自动扣款、年费续订 |
+| 授权要求 | 即时授权 | 需预先建立 Mandate |
+
+## 订阅配置
+
+### 订阅周期类型
+
+| 周期 | 说明 |
+|------|------|
+| `daily` | 每日扣款 |
+| `weekly` | 每周扣款 |
+| `monthly` | 每月扣款（最常用） |
+| `quarterly` | 每季度扣款 |
+| `yearly` | 每年扣款 |
+
+### 试用期与首充优惠
+
+Waffo 支持在订阅创建时配置试用期（Trial Period），试用期内不产生实际扣款，到期后自动转为正式订阅。同时支持首充折扣码、按量计费等高级计费逻辑。
+
+```json
+{
+  "plan_id": "plan_monthly_pro",
+  "trial_period_days": 14,
+  "promo_code": "WELCOME50",
+  "billing_cycle_anchor": "2025-02-01"
+}
+```
+
+## 支持的支付方式
+
+| 支付方式 | 首次 CIT | 后续 MIT | 说明 |
+|----------|----------|----------|------|
+| Visa / Mastercard | ✅ | ✅ | 主流信用卡，全面支持 |
+| American Express | ✅ | ✅ | 需开通 Amex Recurring |
+| UnionPay | ✅ | ✅ | 境内银联卡支持 |
+| SEPA Direct Debit | ✅ | ✅ | 欧洲地区银行账户直扣 |
+| Alipay | ✅ | ❌ | 仅支持首次一次性付款 |
+| Apple Pay | ✅ | ❌ | 无法用于后台自动扣款 |
+
+## 业务流程以及 UI
+
+### 首次订阅流程（CIT）
+
+<Steps>
+  <Step title="创建订阅计划">
+    商户在 Waffo 控制台或通过 API 创建 Plan，定义价格、周期、货币等参数。
+  </Step>
+  <Step title="用户选择订阅">
+    用户在商户前端页面选择套餐，商户服务端创建 Subscription，获取 `client_secret`。
+  </Step>
+  <Step title="用户完成首次付款">
+    用户通过 Checkout 组件输入支付方式并授权，完成首次 CIT 扣款与 3DS 验证，Mandate 同步建立。
+  </Step>
+  <Step title="周期性自动续费（MIT）">
+    Waffo 根据订阅配置在每个计费周期自动发起 MIT 扣款，无需用户操作，结果通过 Webhook 通知商户。
+  </Step>
+</Steps>
+
+### 订阅状态流转
+
+```
+trialing → active → past_due → canceled
+                ↘ paused
+```
+
+## 集成模式选择
+
+### Hosted 订阅页面
+
+Waffo 托管完整的订阅注册页面，商户仅需配置套餐并提供跳转链接，适合快速上线场景。
+
+### Embedded 集成
+
+通过 SDK 将订阅表单嵌入商户页面，支持自定义套餐展示、优惠码输入、试用期说明等 UI 元素。
+
+## 快速开始
+
+### 步骤一：创建订阅计划（Plan）
+
+```javascript
+const plan = await waffo.plans.create({
+  name: 'Pro 月度订阅',
+  amount: 2999,           // 29.99 USD（单位：分）
+  currency: 'usd',
+  interval: 'month',
+  interval_count: 1,
+  trial_period_days: 7    // 7天免费试用
+});
+```
+
+### 步骤二：创建订阅并获取 client_secret
+
+```javascript
+const subscription = await waffo.subscriptions.create({
+  customer_id: 'cus_xxx',
+  plan_id: plan.id,
+  payment_behavior: 'default_incomplete',
+  expand: ['latest_invoice.payment_intent']
+});
+
+const clientSecret = subscription.latest_invoice.payment_intent.client_secret;
+```
+
+### 步骤三：前端完成首次授权
+
+```javascript
+const result = await waffoPayment.confirmPayment({
+  clientSecret: clientSecret,
+  confirmParams: {
+    return_url: 'https://example.com/subscription/confirm'
+  }
+});
+```
+
+### 步骤四：监听订阅 Webhook 事件
+
+```javascript
+// 关键订阅事件
+const subscriptionEvents = [
+  'invoice.paid',               // 成功扣款
+  'invoice.payment_failed',     // 扣款失败
+  'customer.subscription.updated', // 订阅变更
+  'customer.subscription.deleted'  // 订阅取消
+];
+```
+
+<Warning>
+MIT 自动扣款必须基于有效的 Mandate 授权协议。在首次 CIT 成功后，Waffo 会自动建立 Mandate，后续 MIT 将引用此授权。请确保向用户明确告知订阅条款和自动续费说明，以满足各地区监管要求。
+</Warning>

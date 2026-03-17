@@ -1,0 +1,150 @@
+---
+title: "收银台"
+description: "Waffo 标准化支付收银台，提供统一的全球支付交互体验，支持品牌定制与多语言自适应"
+---
+
+## 收银台概述
+
+Waffo Checkout 是标准的支付收款产品，为商户提供统一的全球支付交互界面。无论用户来自哪个国家，Checkout 都能智能匹配最合适的支付方式和语言，提供流畅的本地化支付体验。
+
+### 核心功能
+
+<CardGroup cols={2}>
+  <Card title="统一支付模式" icon="layer-group">
+    同时支持一次性购买和订阅扣款两种计费模式，一套收银台覆盖所有收款场景。
+  </Card>
+  <Card title="全球化适配" icon="earth-asia">
+    根据用户 IP 和浏览器设置，智能匹配语言与当地主流支付方式，提升全球用户转化率。
+  </Card>
+  <Card title="多端响应式" icon="mobile-screen">
+    针对 PC 端和移动端分别优化布局，提供流畅的跨设备支付体验，降低移动端支付流失率。
+  </Card>
+  <Card title="深度品牌定制" icon="paintbrush">
+    支持自定义品牌色、字体样式、圆角、Logo 位置等视觉元素，与商户品牌风格无缝融合。
+  </Card>
+</CardGroup>
+
+## 支付流程体验
+
+### 用户支付流程
+
+<Steps>
+  <Step title="进入收银台">
+    用户点击商户页面的「立即支付」按钮，进入 Waffo Checkout 界面（Hosted 模式跳转，Embedded 模式原地展开）。
+  </Step>
+  <Step title="选择支付方式">
+    收银台根据用户地区智能展示可用的支付方式，用户选择偏好的支付渠道。
+  </Step>
+  <Step title="填写支付信息">
+    根据支付方式不同，用户填写卡号、有效期、CVV（银行卡），或跳转至第三方钱包授权（Apple Pay / Google Pay）。
+  </Step>
+  <Step title="完成验证与支付">
+    部分支付方式需完成 3DS 二次验证。验证通过后，支付即时完成，用户跳转至商户指定的成功页面。
+  </Step>
+</Steps>
+
+### 集成模式
+
+Waffo Checkout 提供两种集成模式，满足不同商户的技术能力和体验需求：
+
+#### Hosted（跳转式）
+
+Waffo 完整管理收银台页面。商户创建 Checkout Session 后，将用户重定向至 Waffo 提供的 URL。
+
+- **优势**：零前端开发、Waffo 负责全部 PCI 合规、自动获取最新功能
+- **劣势**：用户离开商户域，品牌连续性稍弱
+
+```bash
+# 创建 Session 后获取 checkout_url
+https://checkout.waffo.com/pay/cs_live_xxx
+```
+
+#### Embedded（嵌入式）
+
+通过 JavaScript SDK 或 Web Component 将收银台直接嵌入商户页面，**用户全程留在您的域名中，显著降低结账流失率**。
+
+- **优势**：品牌一致性强、用户体验流畅、支持高度定制
+- **劣势**：需要前端集成工作，商户需配合完成 SAQ A 级 PCI 合规
+
+## UI 定制化
+
+### 配置方式
+
+Waffo Checkout 支持三种层次的配置方式，灵活适配不同团队的工作流：
+
+| 方式 | 使用场景 | 技术要求 |
+|------|----------|----------|
+| 商户 Portal 可视化配置 | 运营团队日常调整 | 无需编码 |
+| API 参数（服务端） | 动态配置、A/B 测试 | 后端开发 |
+| 客户端 SDK | 前端实时控制 | 前端开发 |
+
+### 可配置项
+
+```javascript
+const appearance = {
+  theme: 'light',          // 'light' | 'dark' | 'night' | 'custom'
+  variables: {
+    colorPrimary: '#0570de',      // 主色调（按钮、选中状态）
+    colorBackground: '#ffffff',   // 背景色
+    colorText: '#30313d',         // 文字颜色
+    colorDanger: '#df1b41',       // 错误/警告色
+    borderRadius: '4px',          // 圆角大小
+    fontFamily: 'PingFang SC, sans-serif',  // 字体
+    spacingUnit: '4px'            // 间距基准单位
+  },
+  rules: {
+    '.Input': {
+      border: '1px solid #e3e8ef'
+    },
+    '.Label': {
+      fontWeight: '500'
+    }
+  }
+};
+```
+
+### 主题预设
+
+| 主题 | 适用场景 |
+|------|----------|
+| `light` | 默认浅色主题，适合大多数品牌 |
+| `dark` | 深色背景品牌，科技感强 |
+| `night` | 深夜/沉浸式场景，护眼模式 |
+| `custom` | 完全自定义，所有变量均可覆盖 |
+
+## 多语言支持
+
+Waffo Checkout 支持以下语言，并根据用户浏览器语言和 IP 地区**智能自适应**：
+
+| 语言代码 | 语言 | 适配地区 |
+|----------|------|----------|
+| `zh-CN` | 简体中文 | 中国大陆 |
+| `zh-TW` | 繁体中文 | 台湾、香港 |
+| `en-US` | 英文 | 全球默认 |
+| `ja-JP` | 日文 | 日本 |
+| `th-TH` | 泰文 | 泰国 |
+| `id-ID` | 印尼文 | 印度尼西亚 |
+| `es-ES` | 西班牙文 | 西班牙语地区 |
+| `ko-KR` | 韩文 | 韩国 |
+
+商户也可在初始化时强制指定语言：
+
+```javascript
+const waffoPayment = new WaffoPayment({
+  apiKey: 'pk_xxx',
+  locale: 'zh-CN'  // 强制使用简体中文
+});
+```
+
+### 支持的全球支付方式
+
+Waffo Checkout 原生支持 **430+ 种全球支付方式**，包括：
+
+- Visa、Mastercard、Apple Pay、Google Pay
+- Alipay（支付宝）、WeChat Pay（微信支付）
+- TrueMoney（泰国）、GrabPay（东南亚）
+- 以及更多本地化支付方式
+
+<Tip>
+建议启用「智能支付方式排序」功能。Waffo 将根据用户地区、历史转化数据，自动优化支付方式的展示顺序，提升整体支付成功率。
+</Tip>

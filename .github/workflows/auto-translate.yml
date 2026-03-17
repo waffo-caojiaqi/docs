@@ -1,0 +1,82 @@
+# ============================================================
+# auto-translate.yml
+#
+# PURPOSE: When native Markdown files in docs-source/ change,
+# automatically translate them to Mintlify MDX format and
+# commit the results back to the repo.
+#
+# This makes the docs repo the single source of truth:
+#   docs-source/  ← writers push native .md here
+#   products/     ← auto-generated .mdx lands here
+#
+# No manual conversion needed.
+# ============================================================
+
+name: Auto-translate docs-source to Mintlify MDX
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs-source/**/*.md"
+
+  workflow_dispatch:
+    inputs:
+      force_all:
+        description: "Re-translate all files (not just changed ones)"
+        type: boolean
+        default: false
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # needed to detect changed files
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Translate changed files
+        run: |
+          if [ "${{ github.event.inputs.force_all }}" = "true" ]; then
+            echo "Force mode: translating all files in docs-source/"
+            node scripts/md-to-mintlify.js docs-source/ .
+          else
+            # Only translate files changed in this push
+            CHANGED=$(git diff --name-only HEAD~1 HEAD -- 'docs-source/**/*.md' 2>/dev/null || \
+                      git diff --name-only HEAD -- 'docs-source/**/*.md')
+            if [ -z "$CHANGED" ]; then
+              echo "No .md files changed. Skipping."
+              exit 0
+            fi
+            echo "Changed files:"
+            echo "$CHANGED"
+            for file in $CHANGED; do
+              if [ -f "$file" ]; then
+                # Map docs-source/foo/bar.md → foo/bar.mdx
+                OUT="${file#docs-source/}"
+                OUT="${OUT%.md}.mdx"
+                node scripts/md-to-mintlify.js "$file" "$OUT"
+              fi
+            done
+          fi
+
+      - name: Commit translated files
+        run: |
+          git config user.name "docs-translate-bot"
+          git config user.email "bot@waffo.com"
+          git add "*.mdx" "**/*.mdx"
+          if git diff --staged --quiet; then
+            echo "Nothing to commit."
+          else
+            git commit -m "chore: auto-translate docs-source changes to MDX"
+            git push
+          fi

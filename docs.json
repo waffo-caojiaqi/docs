@@ -21,21 +21,28 @@
     },
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Products & Services",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": ["index"]
+          },
+          {
+            "group": "Acquiring & Payments",
+            "pages": [
+              "products/subscription-recurring"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Integration Guide",
         "groups": [
           {
             "group": "Getting started",
             "pages": [
-              "index",
               "quickstart",
               "development"
-            ]
-          },
-          {
-            "group": "Customization",
-            "pages": [
-              "essentials/settings",
-              "essentials/navigation"
             ]
           },
           {
@@ -44,7 +51,8 @@
               "essentials/markdown",
               "essentials/code",
               "essentials/images",
-              "essentials/reusable-snippets"
+              "essentials/reusable-snippets",
+              "essentials/custom-components"
             ]
           }
         ]
@@ -77,12 +85,16 @@
       "copy",
       "view",
       "chatgpt",
-      "claude"
+      "claude",
+      "cursor",
+      "vscode"
     ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/waffo"
+      "x": "https://x.com/waffo",
+      "github": "https://github.com/waffo-org",
+      "linkedin": "https://linkedin.com/company/waffo"
     }
   },
   "background": {

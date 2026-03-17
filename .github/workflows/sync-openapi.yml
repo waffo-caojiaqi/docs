@@ -1,0 +1,82 @@
+# ============================================================
+# sync-openapi.yml
+#
+# PURPOSE: Place this workflow in the BACKEND repository.
+# When the OpenAPI spec changes, it auto-pushes the updated
+# file into the docs repo — Mintlify redeploys automatically.
+#
+# SETUP (one-time):
+#   1. Generate a GitHub PAT with repo write access.
+#   2. Add it as secret DOCS_REPO_TOKEN in the backend repo.
+#   3. Set DOCS_REPO below to your actual docs repo.
+#   4. Set SPEC_PATH to where your backend generates the spec.
+# ============================================================
+
+name: Sync OpenAPI spec to docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "openapi.yaml"
+      - "openapi.json"
+      - "api-spec/**"
+      - "src/**"          # uncomment if spec is generated from source
+
+  # Allow manual trigger from GitHub Actions UI
+  workflow_dispatch:
+
+env:
+  DOCS_REPO: "waffo-org/waffo-docs"
+  SPEC_PATH: "openapi.yaml"                        # path in backend repo
+  DOCS_TARGET_PATH: "api-reference/openapi.yaml"   # destination in docs repo
+
+jobs:
+  sync-openapi:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout backend repo
+        uses: actions/checkout@v4
+
+      # Optional: generate spec from code (e.g. FastAPI, NestJS, Spring)
+      # - name: Generate OpenAPI spec
+      #   run: |
+      #     pip install fastapi[all]
+      #     python scripts/export_openapi.py > openapi.yaml
+
+      - name: Validate spec exists
+        run: |
+          if [ ! -f "${{ env.SPEC_PATH }}" ]; then
+            echo "ERROR: ${{ env.SPEC_PATH }} not found"
+            exit 1
+          fi
+          echo "Spec file size: $(wc -c < ${{ env.SPEC_PATH }}) bytes"
+
+      - name: Checkout docs repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.DOCS_REPO }}
+          token: ${{ secrets.DOCS_REPO_TOKEN }}
+          path: docs-repo
+
+      - name: Copy spec to docs repo
+        run: |
+          cp "${{ env.SPEC_PATH }}" "docs-repo/${{ env.DOCS_TARGET_PATH }}"
+
+      - name: Commit and push to docs repo
+        run: |
+          cd docs-repo
+          git config user.name "openapi-sync-bot"
+          git config user.email "bot@waffo.com"
+
+          git add "${{ env.DOCS_TARGET_PATH }}"
+
+          # Only commit if there are actual changes
+          if git diff --staged --quiet; then
+            echo "No changes to OpenAPI spec. Skipping commit."
+          else
+            COMMIT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+            git commit -m "chore: sync openapi spec from backend @ $COMMIT_SHA"
+            git push
+            echo "Pushed updated spec. Mintlify will redeploy automatically."
+          fi

@@ -1,28 +1,312 @@
 ---
-title: "Auth-Capture"
-description: "Waffo 预授权与请款功能，支持先冻结后扣款的灵活支付流程。"
+title: "Auth & Capture | 预授权与请款"
+description: "两步式支付：先冻结资金（Authorization），再按实际扣款（Capture）。适用于 AI 按量计费、电商发货后扣款、差旅押金等场景。 / Two-phase payment: freeze funds first (Authorization), then charge actuals (Capture). Ideal for usage-based billing, e-commerce shipment models, and deposit-based services."
 ---
 
-## 预授权
+## 中文版
 
-预授权（Authorization）是一种先冻结用户资金、后实际扣款的支付模式。商户在用户下单时发起预授权，银行在用户账户中冻结对应金额，但资金尚未实际转移。待商户确认发货或服务完成后，再发起请款（Capture）完成实际扣款。
+### 产品概览
 
-预授权适用于以下场景：
+Auth & Capture 将支付拆分为两个独立步骤：
 
-- **酒店/租车预订**：预订时冻结资金，退房/还车时按实际费用请款，多余冻结自动释放
-- **分步发货**：大额订单分批发货，按实际发货金额分次请款
-- **延迟确认订单**：下单时冻结，人工审核或配货后再扣款
-- **超额授权**：冻结略高于预估金额（如酒店额外消费），最终按实际金额请款
+- **Authorization（预授权）**：向发卡行发出冻结请求，锁定用户账户中的指定金额，但资金尚未实际转移。
+- **Capture（请款）**：在预授权成功后，发起实际资金划转，完成最终扣款。
 
-预授权的有效期通常为 7-30 天（因卡组织和发卡行规则不同），超期未请款的预授权将自动失效。
+这与 **Sale（即时扣款）** 不同——Sale 在一次请求中同时完成授权与扣款，资金立即转移。Auth & Capture 则在两者之间留出业务操作窗口。
 
-## 请款
+<Note>
+预授权有效期通常为 **7–30 天**（因卡组织和发卡行规则不同）。超期未请款的预授权将自动失效，冻结额度自动释放。
+</Note>
 
-请款（Capture）是对已完成预授权的交易发起实际资金划转的操作：
+---
 
-- **全额请款**：对预授权金额全额扣款，最常见的请款方式
-- **部分请款**：只扣取预授权金额的一部分，剩余冻结金额自动释放（如实际消费低于预估）
-- **多次请款**：对同一预授权发起多次部分请款，总额不超过预授权金额（如分批发货场景）
-- **取消授权（Void）**：在请款前取消预授权，立即释放冻结资金
+### 核心价值
 
-预授权和请款操作均可通过 Waffo API 或商户 Portal 发起。详细接口参数请参阅[一次性支付 API](/developer/api/one-time-payment) 文档中的 Auth-Capture 部分。
+<CardGroup cols={3}>
+  <Card title="资金安全与反欺诈" icon="shield-check">
+    在高成本服务交付前确保资金充足。若检测到欺诈，直接撤销预授权（Void），**无资金实际流动，零损失**。
+  </Card>
+  <Card title="精准计费体验" icon="calculator">
+    支持"冻结上限，扣除实际"逻辑。用户只承担实际消费，剩余冻结金额自动释放，适配 **非固定价格场景**。
+  </Card>
+  <Card title="降低退款成本" icon="arrow-turn-down-left">
+    Void（撤销）不产生银行手续费，用户额度恢复更快；优于 Refund（退款）——后者已划款，需原路退回，成本更高。
+  </Card>
+</CardGroup>
+
+---
+
+### 核心适用场景
+
+<CardGroup cols={3}>
+  <Card title="AI 与按量付费服务" icon="microchip-ai">
+    任务开始前 Auth 冻结最大费用（如 $10），任务结束后按实际消耗 Capture（如 5000 Token = $4.50），自动释放剩余 $5.50。GPU 推理、云函数、API 调用均适用。
+  </Card>
+  <Card title="实体电商发货后扣款" icon="box">
+    下单时 Auth 冻结 $100，发货时 Capture 实际金额。避免超卖导致的退款财务混乱，与 Amazon 等主流电商平台的标准做法一致。
+  </Card>
+  <Card title="差旅与租赁押金担保" icon="building">
+    入住/取车时冻结押金（如 $200），离店/还车后按实际消费 Capture，多余部分自动释放。无需事后退款操作。
+  </Card>
+</CardGroup>
+
+---
+
+### 支付流程
+
+<Steps>
+  <Step title="创建预授权">
+    商户调用 `POST /payments`，将 `capture_method` 设为 `manual`，指定冻结金额。发卡行验证通过后，返回 `payment.authorized` 状态，资金冻结。
+  </Step>
+  <Step title="执行业务逻辑">
+    在预授权有效期内，商户完成服务交付、发货确认、费用核算等业务操作，确定最终扣款金额。
+  </Step>
+  <Step title="发起请款（Capture）">
+    调用 `POST /payments/{id}/capture`，传入实际扣款金额（≤ 预授权金额）。资金正式划转，订单完成。剩余冻结金额自动释放。
+  </Step>
+  <Step title="（可选）撤销预授权（Void）">
+    若需取消交易，调用 `POST /payments/{id}/void`。预授权立即撤销，无手续费，用户额度快速恢复。
+  </Step>
+</Steps>
+
+---
+
+### 关键能力与操作
+
+#### 部分请款（Partial Capture）
+
+实际请款金额可小于预授权金额，差额自动释放回用户账户。无需手动操作，系统自动处理剩余冻结。
+
+**示例：**
+- 预授权金额：$10.00
+- 实际消耗（5000 Token）：$4.50
+- 自动释放：$5.50
+
+#### 预授权撤销（Void）与退款（Refund）对比
+
+| 对比维度 | Void（撤销） | Refund（退款） |
+|---|---|---|
+| 触发时机 | Capture **之前** | Capture **之后** |
+| 资金流动 | 无（仅解除冻结） | 有（已划款需原路退回） |
+| 银行手续费 | 不产生 | 通常产生 |
+| 用户额度恢复 | 快速（通常即时或数小时） | 较慢（通常 3–10 个工作日） |
+| 商户成本 | 低 | 较高 |
+
+<Note>
+**最佳实践**：在 Capture 之前发现问题（如欺诈、取消订单），应优先使用 **Void** 而非等待划款后再退款。
+</Note>
+
+#### 自动过期释放（Auto-Release）
+
+预授权有效期届满（通常 7–30 天）且未发起 Capture，系统自动释放冻结金额。商户应在有效期内完成请款或主动 Void，避免用户长期资金占用影响体验。
+
+---
+
+### 接入与配置
+
+#### API 集成
+
+**1. 创建预授权**
+
+```http
+POST /payments
+Content-Type: application/json
+
+{
+  "amount": 1000,
+  "currency": "USD",
+  "capture_method": "manual",
+  "payment_method": { ... }
+}
+```
+
+**2. 发起请款**
+
+```http
+POST /payments/{payment_id}/capture
+Content-Type: application/json
+
+{
+  "amount": 450
+}
+```
+
+**3. 撤销预授权**
+
+```http
+POST /payments/{payment_id}/void
+```
+
+#### Webhook 事件通知
+
+| 事件名称 | 触发时机 |
+|---|---|
+| `payment.authorized` | 预授权成功，资金冻结 |
+| `payment.captured` | 请款成功，资金划转完成 |
+| `payment.voided` | 预授权撤销成功 |
+| `payment.authorization_expired` | 预授权到期自动释放 |
+
+---
+
+## English Version
+
+### Overview
+
+Auth & Capture splits a payment into two distinct phases:
+
+- **Authorization**: A hold request sent to the card issuer that locks a specified amount in the cardholder's account. No funds are transferred yet.
+- **Capture**: The actual fund transfer that completes the payment, initiated after the authorization hold is in place.
+
+This differs from a **Sale (instant debit)**, where authorization and capture happen in a single request with immediate fund transfer. Auth & Capture introduces a controlled window between the two events for business operations.
+
+<Note>
+Authorization holds typically expire after **7–30 days** depending on card network and issuer rules. Uncaptured authorizations are automatically released when they expire.
+</Note>
+
+---
+
+### Core Value
+
+<CardGroup cols={3}>
+  <Card title="Security & Anti-Fraud" icon="shield-check">
+    Verify funds are available before delivering costly services. If fraud is detected, simply Void the authorization — **no funds move, zero financial loss**.
+  </Card>
+  <Card title="Precision Billing" icon="calculator">
+    Authorize the maximum expected amount, capture only the actual usage. Users are charged exactly what they consume. Ideal for **variable-cost pricing models**.
+  </Card>
+  <Card title="Lower Reversal Costs" icon="arrow-turn-down-left">
+    Void has no bank fees and restores the customer's credit limit faster than a Refund — which requires funds to physically move back through the payment network.
+  </Card>
+</CardGroup>
+
+---
+
+### Use Cases
+
+<CardGroup cols={3}>
+  <Card title="AI & Usage-Based Services" icon="microchip-ai">
+    Auth $10 max before a GPU task starts. Capture $4.50 actual cost (5,000 tokens). Release the remaining $5.50 automatically. Applicable to GPU inference, cloud functions, and metered APIs.
+  </Card>
+  <Card title="E-Commerce Shipment Model" icon="box">
+    Auth on order placement, Capture on shipment confirmation. Eliminates oversell-driven refund chaos. This is the standard practice for Amazon and major e-commerce platforms.
+  </Card>
+  <Card title="Travel & Rental Deposits" icon="building">
+    Auth a deposit (e.g., $200) at check-in or vehicle pickup. Capture actual charges at checkout or return. No post-fact refund needed for unused deposit amounts.
+  </Card>
+</CardGroup>
+
+---
+
+### Payment Flow
+
+<Steps>
+  <Step title="Create Authorization">
+    Call `POST /payments` with `capture_method: manual` and the maximum amount to freeze. Once the issuer approves, the payment enters `payment.authorized` status and the funds are held.
+  </Step>
+  <Step title="Execute Business Logic">
+    Within the authorization window, complete your business operations — service delivery, shipment confirmation, or usage metering — to determine the final charge amount.
+  </Step>
+  <Step title="Initiate Capture">
+    Call `POST /payments/{id}/capture` with the actual amount to charge (must be ≤ the authorized amount). Funds transfer is completed and any remaining hold is automatically released.
+  </Step>
+  <Step title="(Optional) Void Authorization">
+    To cancel the transaction before capture, call `POST /payments/{id}/void`. The authorization is immediately released with no fees charged and the customer's credit is restored promptly.
+  </Step>
+</Steps>
+
+---
+
+### Key Capabilities
+
+#### Partial Capture
+
+The capture amount can be less than the authorized amount. The difference is automatically released back to the cardholder — no manual intervention required.
+
+**Example:**
+- Authorized amount: $10.00
+- Actual usage (5,000 tokens): $4.50
+- Auto-released: $5.50
+
+#### Void vs. Refund
+
+| Dimension | Void | Refund |
+|---|---|---|
+| When | **Before** Capture | **After** Capture |
+| Fund movement | None (hold released) | Funds move back to customer |
+| Bank fees | None | Typically applicable |
+| Credit restoration speed | Fast (often instant to hours) | Slow (typically 3–10 business days) |
+| Merchant cost | Low | Higher |
+
+<Note>
+**Best Practice**: If an issue (fraud, cancellation) is identified before Capture, always prefer **Void** over waiting to Refund after funds have settled.
+</Note>
+
+#### Auto-Release
+
+If an authorization is not captured within its validity window (typically 7–30 days), the system automatically releases the hold. Merchants should capture or void within the window to avoid prolonged holds that degrade customer experience.
+
+---
+
+### Integration
+
+#### API Endpoints
+
+**1. Create Authorization**
+
+```http
+POST /payments
+Content-Type: application/json
+
+{
+  "amount": 1000,
+  "currency": "USD",
+  "capture_method": "manual",
+  "payment_method": { ... }
+}
+```
+
+**2. Capture Funds**
+
+```http
+POST /payments/{payment_id}/capture
+Content-Type: application/json
+
+{
+  "amount": 450
+}
+```
+
+**3. Void Authorization**
+
+```http
+POST /payments/{payment_id}/void
+```
+
+#### Webhook Events
+
+| Event | Trigger |
+|---|---|
+| `payment.authorized` | Authorization approved, funds held |
+| `payment.captured` | Capture complete, funds transferred |
+| `payment.voided` | Authorization successfully voided |
+| `payment.authorization_expired` | Authorization expired, hold auto-released |
+
+---
+
+### FAQ
+
+**Q: Can I capture more than the authorized amount?**
+
+No. Capture amount must be ≤ the original authorized amount. To charge a higher amount, you must create a new authorization.
+
+**Q: Can I perform multiple partial captures on one authorization?**
+
+This depends on card network rules and Waffo configuration. Some networks support multi-capture; others require a new authorization per capture. Contact your Waffo account manager to enable this.
+
+**Q: What happens if I forget to capture or void before expiry?**
+
+The authorization expires automatically and the hold is released. No funds are transferred. You would need to create a new authorization to proceed with the payment.
+
+**Q: Is Auth & Capture available for all payment methods?**
+
+Auth & Capture is primarily supported for card-based payment methods (Visa, Mastercard, etc.). Availability for alternative payment methods (wallets, bank transfers) varies. Check with your Waffo integration team.

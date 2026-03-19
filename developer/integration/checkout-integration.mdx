@@ -9,7 +9,7 @@ Waffo 收银台提供两种集成模式：**托管模式（Hosted）** 将用户
 
 ### 系统架构
 
-```
+```text
 商户系统 -> SDK -> Iframe -> Payment Service -> 支付网关
 ```
 
@@ -49,10 +49,10 @@ res.json({ clientSecret: session.client_secret });
 
 ### 第二步：前端 SDK 初始化
 
+<CodeGroup>
 ```html
 <script src="https://js.waffo.com/v1/waffo.js"></script>
 ```
-
 ```javascript
 const waffoPayment = new WaffoPayment({
   apiKey: 'pk_test_xxx',
@@ -69,6 +69,7 @@ const waffoPayment = new WaffoPayment({
   }
 });
 ```
+</CodeGroup>
 
 ### 第三步：挂载收银台
 
@@ -108,16 +109,38 @@ const { error } = await waffoPayment.confirmPayment({
 
 ### Checkout Session 核心参数
 
-| 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| `payment_method_types` | array | 是 | 支持的支付方式列表 |
-| `line_items` | array | 是 | 商品行项目 |
-| `mode` | string | 是 | `payment`（一次性）或 `subscription`（订阅） |
-| `success_url` | string | 是 | 支付成功后的跳转地址 |
-| `cancel_url` | string | 是 | 用户取消支付后的跳转地址 |
-| `customer` | string | 否 | 已有客户 ID，用于关联支付记录 |
-| `metadata` | object | 否 | 自定义业务数据，将在 Webhook 中透传 |
-| `expires_at` | timestamp | 否 | Session 过期时间，默认 24 小时 |
+<ParamField name="payment_method_types" type="array" required>
+  支持的支付方式列表
+</ParamField>
+
+<ParamField name="line_items" type="array" required>
+  商品行项目
+</ParamField>
+
+<ParamField name="mode" type="string" required>
+  `payment`（一次性）或 `subscription`（订阅）
+</ParamField>
+
+<ParamField name="success_url" type="string" required>
+  支付成功后的跳转地址
+</ParamField>
+
+<ParamField name="cancel_url" type="string" required>
+  用户取消支付后的跳转地址
+</ParamField>
+
+<ParamField name="customer" type="string">
+  已有客户 ID，用于关联支付记录
+</ParamField>
+
+<ParamField name="metadata" type="object">
+  自定义业务数据，将在 Webhook 中透传
+</ParamField>
+
+<ParamField name="expires_at" type="timestamp">
+  Session 过期时间，默认 24 小时
+</ParamField>
+
 
 ## 定制化选项
 

@@ -1,0 +1,226 @@
+---
+title: "拒付与争议 | Disputes & Chargebacks"
+description: "从预警到抗辩的全流程争议与拒付管理能力，帮助商户降低资金损失、提升处理效率"
+---
+
+## 中文版
+
+### 一、产品目标
+
+Waffo 提供从预警到抗辩的全流程争议与拒付管理能力，帮助商户在交易风险事件发生前后，通过系统化、自动化的方式降低资金损失、提升处理效率，并保障账户合规性。
+
+### 二、产品介绍
+
+在跨境与本地支付业务中，交易后的争议与资金追索风险是商户面临的关键运营挑战。Waffo 争议与拒付处理平台构建了一个系统化、分层管理的闭环防御体系，涵盖以下三个核心环节：
+
+<CardGroup cols={3}>
+  <Card title="拒付预警" icon="bell">
+    在持卡人投诉但银行尚未正式立案前提供早期风险信号，是成本最低的前置防御环节。
+  </Card>
+  <Card title="争议" icon="scale-balanced">
+    银行正式信息查询阶段，通过规范的证据提交阻止案件进入资金扣划环节。
+  </Card>
+  <Card title="拒付" icon="shield-xmark">
+    发卡行强制扣款的最终决策阶段，通过系统化抗辩追回资金。
+  </Card>
+</CardGroup>
+
+Waffo 将上述三个环节整合为统一的**"风险感知 → 协商响应 → 正式抗辩"**标准化闭环，帮助商户在风险演进的全链路中主动干预、有效应对。
+
+---
+
+### 三、拒付预警（Chargeback Alert）
+
+> 在风险尚未固化为正式案件时，提供黄金处理窗口，实现成本最优的风险化解。
+
+#### 3.1 场景描述
+
+当持卡人对信用卡交易产生疑问并联系发卡行投诉，但银行尚未正式启动拒付流程时，卡组织或第三方网络（如 Visa RDR、Mastercard Ethoca）会生成预警信号。此时交易处于非强制性的协商窗口，商户拥有 **24–72 小时**的黄金处理时间，可通过主动干预避免案件正式成立。
+
+#### 3.2 核心能力
+
+- **多渠道预警接入**：对接 Visa RDR、Mastercard Ethoca 等主流卡组织预警网络，实现风险信号的标准化接入与集中管理。
+- **智能订单关联**：通过交易标识、金额、时间、卡号掩码等多维度信息自动精准匹配商户订单，支持人工辅助匹配作为补充。
+- **自动化处置策略**：支持基于规则的自动处理动作配置，如在预警触发后自动执行退款，最大化利用窗口期阻止拒付发生。
+- **处理过程全程可视**：提供专属看板与案件列表，实时追踪预警状态、退款进度及处理结果，异常案件可获人工介入支持。
+
+#### 3.3 商户价值
+
+- **避免损失扩大**：在零罚金、零记录阶段解决问题，从根本上避免后续高昂的拒付成本与账号风控隐患。
+- **提升运营效率**：通过自动化策略与智能匹配，大幅减少人工排查与响应时间，确保在有限的窗口期内完成处理。
+- **保护账户健康**：成功处理预警可防止拒付率上升，维护商户在卡组织及收单机构中的信誉评级。
+
+---
+
+### 四、争议（Customer Dispute）
+
+> 在银行立案查询阶段，通过规范、专业的证据提交，有效澄清事实，阻止案件进入资金扣划。
+
+#### 4.1 场景描述
+
+由发卡行或支付渠道发起的正式信息查询流程。银行要求商户提供交易凭证以核实交易真实性，此时资金通常尚未被扣划。这是协商与证据澄清阶段，及时、准确地响应争议请求可成功拦截案件升级。
+
+#### 4.2 核心能力
+
+- **智能证据管理**：系统自动归集相关交易数据、物流记录、用户授权凭证，一键生成标准化回复包。
+- **时限智能提醒**：根据不同卡组织的应答时限（通常 7–20 个工作日），自动发送提醒，避免超时失权。
+- **多渠道统一管理**：Visa、Mastercard、本地支付渠道的争议案件统一在 Dashboard 管理，无需多平台切换。
+- **案件状态追踪**：实时展示案件进展，包含银行反馈与最新状态更新。
+
+#### 4.3 商户价值
+
+- **降低升级概率**：有效处理争议可显著降低其转化为正式拒付的概率，减少综合损失。
+- **减少人工成本**：自动化证据收集与标准化提交流程，大幅降低人工处理时间。
+- **合规保障**：确保在卡组织规定时限内响应，避免因未及时响应而导致案件自动升级。
+
+---
+
+### 五、拒付（Chargeback）
+
+> 在风险处置的最终阶段，通过系统化证据抗辩追回资金，降低综合损失。
+
+#### 5.1 场景描述
+
+持卡人或发卡行对交易提出正式异议后，发卡行强制从商户账户中扣回争议款项的正式流程。此流程伴随明确的规则、时限，并会产生处理费用。
+
+<Note>
+一次拒付的综合成本通常是订单金额的 2–3 倍，包含退款金额、拒付处理费、人工成本及账户风险损失。
+</Note>
+
+#### 5.2 核心能力
+
+- **智能抗辩策略**：基于案件类型（欺诈、商品未收到、商品与描述不符等），系统推荐最优抗辩策略和证据组合。
+- **一键提交抗辩包**：自动生成符合各卡组织标准格式的抗辩材料，包含交易记录、交付证明、沟通记录等。
+- **胜率追踪与分析**：统计历史抗辩胜率，识别高风险商品类目与买家行为模式，辅助商户优化经营决策。
+- **资金追回监控**：实时追踪抗辩进度与资金回款状态，一旦裁决结果出现立即通知商户。
+
+#### 5.3 商户价值
+
+- **提升资金回收率**：专业的抗辩策略和充分的证据材料可显著提升裁决胜率，有效追回被扣资金。
+- **降低运营成本**：通过自动化和智能化减少人工投入，降低每案处理成本。
+- **账户合规保障**：将拒付率控制在卡组织警戒线（通常 1%）以下，保障账户正常运营。
+
+---
+
+### 常见问题（FAQ）
+
+**Q: 拒付预警和拒付有什么区别？**
+
+A: 拒付预警是在银行正式立案前的早期信号，处理成本最低；拒付是发卡行已强制扣款的正式流程，一旦进入此阶段综合成本较高。建议在预警阶段及时处理以避免升级为拒付。
+
+**Q: 收到争议通知后需要在多少时间内回复？**
+
+A: 不同卡组织的时限要求不同，一般为 7–20 个工作日。Waffo 系统会自动提醒即将到期的案件，确保您不会因超时而失去抗辩权。
+
+**Q: 什么类型的证据最有效？**
+
+A: 对于实体商品订单，最有效的证据包括物流签收记录、买家确认收货的通讯记录；对于数字商品，则包括 IP 地址记录、下载/访问日志及用户授权凭证。
+
+---
+
+## English Version
+
+### 1. Product Overview
+
+Waffo provides end-to-end dispute and chargeback management capabilities — from early warning to formal representment — helping merchants systematically reduce financial losses, improve processing efficiency, and maintain account compliance.
+
+### 2. Product Introduction
+
+In cross-border and local payment operations, post-transaction disputes and fund recovery risks are critical operational challenges for merchants. Waffo's Dispute & Chargeback Management Platform builds a systematic, layered closed-loop defense covering three core phases:
+
+<CardGroup cols={3}>
+  <Card title="Chargeback Alert" icon="bell">
+    Early risk signals before the bank formally initiates the chargeback process — the lowest-cost pre-emptive defense.
+  </Card>
+  <Card title="Customer Dispute" icon="scale-balanced">
+    Formal bank inquiry stage — prevent escalation to fund deduction through timely evidence submission.
+  </Card>
+  <Card title="Chargeback" icon="shield-xmark">
+    Final fund deduction stage — recover funds through systematic representment.
+  </Card>
+</CardGroup>
+
+Waffo integrates these three phases into a unified **"Risk Detection → Negotiation Response → Formal Representment"** standardized closed loop.
+
+---
+
+### 3. Chargeback Alert
+
+#### 3.1 Scenario Description
+
+When a cardholder contacts their issuing bank to dispute a transaction but before the bank formally initiates the chargeback process, card networks or third-party services (Visa RDR, Mastercard Ethoca) generate alert signals. Merchants have a **24–72 hour** golden window to intervene and prevent the case from formally materializing.
+
+#### 3.2 Core Capabilities
+
+- **Multi-channel Alert Integration**: Connected to Visa RDR, Mastercard Ethoca, and other major card network alert services for standardized risk signal management.
+- **Smart Order Matching**: Automatically matches alerts to merchant orders using transaction ID, amount, time, and masked card number; supports manual matching as a supplement.
+- **Automated Response Rules**: Configure rule-based automatic actions (e.g., auto-refund on alert trigger) to maximize use of the window period.
+- **Full Visibility**: Dedicated dashboard and case list for real-time tracking of alert status, refund progress, and outcomes.
+
+#### 3.3 Merchant Value
+
+- **Prevent Escalation**: Resolve issues before any penalties or records are created, fundamentally avoiding costly chargeback fees.
+- **Boost Efficiency**: Automated strategies and smart matching dramatically reduce manual investigation time within the limited window.
+- **Protect Account Health**: Successful alert resolution prevents chargeback rate increases, maintaining merchant standing with card networks.
+
+---
+
+### 4. Customer Dispute (Retrieval Request / Inquiry)
+
+#### 4.1 Scenario Description
+
+A formal information inquiry initiated by the issuing bank or payment channel. The bank requests transaction evidence to verify authenticity — funds are typically not yet debited at this stage. This is the negotiation and evidence clarification phase.
+
+#### 4.2 Core Capabilities
+
+- **Smart Evidence Management**: System automatically aggregates transaction data, delivery records, and user authorization credentials into a standardized response package.
+- **Deadline Alerts**: Automatic reminders based on each card network's response deadline (typically 7–20 business days) to avoid losing rights through timeout.
+- **Unified Multi-channel Management**: Visa, Mastercard, and local payment channel disputes managed in a single Dashboard.
+- **Case Status Tracking**: Real-time display of case progress including bank feedback and status updates.
+
+#### 4.3 Merchant Value
+
+- **Reduce Escalation Rate**: Effective dispute handling significantly reduces the probability of escalation to formal chargebacks.
+- **Lower Labor Costs**: Automated evidence collection and standardized submission processes dramatically reduce manual processing time.
+- **Compliance Assurance**: Ensures timely responses within card network deadlines, preventing automatic escalation from missed deadlines.
+
+---
+
+### 5. Chargeback
+
+#### 5.1 Scenario Description
+
+After a cardholder or issuer formally disputes a transaction, the issuing bank forcibly debits the disputed amount from the merchant's account. This process has defined rules, deadlines, and incurs processing fees.
+
+<Note>
+The total cost of a chargeback is typically 2–3x the original order amount, including the refund amount, chargeback fees, labor costs, and account risk penalties.
+</Note>
+
+#### 5.2 Core Capabilities
+
+- **Smart Representment Strategy**: Based on dispute type (fraud, item not received, item not as described, etc.), the system recommends optimal representment strategies and evidence combinations.
+- **One-click Representment Package**: Automatically generates dispute packets in formats compliant with each card network's standards, including transaction records, delivery proof, and communication logs.
+- **Win Rate Tracking & Analysis**: Tracks historical representment win rates, identifies high-risk product categories and buyer behavior patterns.
+- **Fund Recovery Monitoring**: Real-time tracking of representment progress and fund recovery status with immediate merchant notification upon resolution.
+
+#### 5.3 Merchant Value
+
+- **Improve Recovery Rate**: Professional representment strategies and comprehensive evidence significantly improve ruling win rates.
+- **Reduce Operating Costs**: Automation and intelligence reduce manual input and lower per-case processing costs.
+- **Account Compliance**: Keep chargeback rates below card network warning thresholds (typically 1%) to maintain normal account operations.
+
+---
+
+### 6. FAQ (Frequently Asked Questions)
+
+**Q: What's the difference between a Chargeback Alert and a Chargeback?**
+
+A: A Chargeback Alert is an early signal before the bank formally initiates proceedings — the lowest-cost intervention point. A Chargeback is the formal process after the issuing bank has already debited funds. Addressing alerts early prevents escalation to the much more costly chargeback stage.
+
+**Q: How long do I have to respond after receiving a dispute notice?**
+
+A: Response deadlines vary by card network, typically 7–20 business days. Waffo automatically sends reminders for approaching deadlines to ensure you never lose representment rights due to timeout.
+
+**Q: What types of evidence are most effective?**
+
+A: For physical goods, the most effective evidence includes delivery confirmation records and buyer acknowledgment communications. For digital goods, IP address logs, download/access logs, and user authorization credentials are most compelling.

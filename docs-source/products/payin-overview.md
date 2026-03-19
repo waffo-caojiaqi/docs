@@ -1,9 +1,14 @@
+---
+title: "Payin Overview"
+description: "Waffo Payin allows merchants to accept payments from customers worldwide using a single unified API."
+---
 # Payin Overview
 
 Waffo Payin allows merchants to accept payments from customers worldwide using a single unified API.
 
-> [!NOTE]
-> Payin supports over 100 payment methods across 50+ countries. See the full list in the Payment Methods reference.
+<Note>
+Payin supports over 100 payment methods across 50+ countries. See the full list in the Payment Methods reference.
+</Note>
 
 ## How it works
 
@@ -13,8 +18,9 @@ Waffo Payin allows merchants to accept payments from customers worldwide using a
 4. The customer completes payment via the hosted or embedded flow.
 5. Waffo sends a webhook to confirm the transaction status.
 
-> [!TIP]
-> Use the Embedded Checkout SDK for the best conversion rates — it keeps users on your page.
+<Tip>
+Use the Embedded Checkout SDK for the best conversion rates — it keeps users on your page.
+</Tip>
 
 ## Authentication
 
@@ -27,8 +33,9 @@ curl -X POST https://api.waffo.com/payin/create \
   -d '{"amount": 1000, "currency": "USD", "order_id": "ORD-001"}'
 ```
 
-> [!WARNING]
-> Never expose your API key in client-side code. Always call the Waffo API from your backend server.
+<Warning>
+Never expose your API key in client-side code. Always call the Waffo API from your backend server.
+</Warning>
 
 ## Error handling
 
@@ -38,5 +45,6 @@ curl -X POST https://api.waffo.com/payin/create \
 | `4002` | Insufficient funds | Prompt user to use another card |
 | `5001` | Provider timeout | Retry with exponential backoff |
 
-> [!IMPORTANT]
-> Always handle `5001` errors with a retry strategy. Timeouts are transient and most succeed on retry.
+<Info>
+Always handle `5001` errors with a retry strategy. Timeouts are transient and most succeed on retry.
+</Info>

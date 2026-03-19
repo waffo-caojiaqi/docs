@@ -9,7 +9,7 @@ description: "Waffo 支付系统中交易、订单和 Webhook 事件的完整状
 
 PaymentIntent（支付意图）是 Waffo 中表示一次支付请求的核心对象，其状态按以下流程流转：
 
-```
+```text
 created → requires_payment_method → requires_confirmation → requires_action → processing → succeeded
                                                                                          ↘ canceled
 ```

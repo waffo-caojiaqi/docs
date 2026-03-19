@@ -100,10 +100,16 @@ Waffo 支持两种主流订阅模式：
 
 通过纯 API 方式实现深度定制化订阅管理：
 
-1. 调用 `POST /subscriptions` 创建订阅计划。
-2. 通过 Tokenization API 绑定用户支付方式。
-3. Waffo 在每个计费周期自动发起扣款并推送 Webhook 通知。
-4. 商户根据 Webhook 事件处理扣款成功/失败逻辑。
+<Steps>
+  <Step title="调用 `POST /subscriptions` 创建订阅计划。">
+  </Step>
+  <Step title="通过 Tokenization API 绑定用户支付方式。">
+  </Step>
+  <Step title="Waffo 在每个计费周期自动发起扣款并推送 Webhook 通知。">
+  </Step>
+  <Step title="商户根据 Webhook 事件处理扣款成功/失败逻辑。">
+  </Step>
+</Steps>
 
 ---
 
@@ -152,11 +158,20 @@ Subscription Payment, also known as automatic deduction or recurring billing, is
 
 #### 1.4 Use Cases
 
-- **Streaming Services**: Monthly/yearly auto-renewal for video and music platforms.
-- **SaaS Software**: Recurring billing for office software and design tools.
-- **Paid Content**: Membership services for knowledge platforms and online courses.
-- **Gaming Subscriptions**: Auto-renewal for monthly/seasonal passes and in-game items.
-
+<CardGroup cols={2}>
+  <Card title="Streaming Services">
+    Monthly/yearly auto-renewal for video and music platforms.
+  </Card>
+  <Card title="SaaS Software">
+    Recurring billing for office software and design tools.
+  </Card>
+  <Card title="Paid Content">
+    Membership services for knowledge platforms and online courses.
+  </Card>
+  <Card title="Gaming Subscriptions">
+    Auto-renewal for monthly/seasonal passes and in-game items.
+  </Card>
+</CardGroup>
 ---
 
 ### 2. Supported Payment Methods
@@ -221,10 +236,16 @@ No frontend development required — use Waffo's hosted checkout to complete sub
 
 Full API-based subscription management for deep customization:
 
-1. Call `POST /subscriptions` to create a subscription plan.
-2. Use the Tokenization API to bind user payment methods.
-3. Waffo automatically initiates charges each billing cycle and pushes Webhook notifications.
-4. Merchants handle success/failure logic based on Webhook events.
+<Steps>
+  <Step title="Call `POST /subscriptions` to create a subscription plan.">
+  </Step>
+  <Step title="Use the Tokenization API to bind user payment methods.">
+  </Step>
+  <Step title="Waffo automatically initiates charges each billing cycle and pushes Webhook notifications.">
+  </Step>
+  <Step title="Merchants handle success/failure logic based on Webhook events.">
+  </Step>
+</Steps>
 
 ---
 

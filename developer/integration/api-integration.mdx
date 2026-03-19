@@ -41,6 +41,7 @@ Content-Type: application/json
 
 ### 创建支付意图（Payment Intent）
 
+<CodeGroup>
 ```javascript
 // Node.js
 const response = await fetch('https://api-test.waffo.com/v1/payment_intents', {
@@ -63,7 +64,6 @@ const response = await fetch('https://api-test.waffo.com/v1/payment_intents', {
 const paymentIntent = await response.json();
 console.log(paymentIntent.client_secret); // 传递给前端
 ```
-
 ```python
 # Python
 import requests
@@ -84,7 +84,6 @@ response = requests.post(
 
 payment_intent = response.json()
 ```
-
 ```go
 // Go
 package main
@@ -116,6 +115,7 @@ func createPaymentIntent() {
     fmt.Println("Payment intent created")
 }
 ```
+</CodeGroup>
 
 ### 查询支付状态
 

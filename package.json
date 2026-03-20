@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/waffo-caojiaqi/docs#readme",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.80.0"
+    "@anthropic-ai/sdk": "^0.80.0",
+    "openai": "^6.32.0"
   }
 }

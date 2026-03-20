@@ -99,7 +99,8 @@ waffo-docs/
 │       └── payin-overview.md        # ← 技术同学/产品在此处写文档
 │
 ├── scripts/
-│   └── md-to-mintlify.js            # MD → MDX 转换脚本
+│   ├── md-to-mintlify.js            # MD → MDX 转换脚本
+│   └── translate-docs.js            # 中文文档 → 英文（AI 翻译）
 │
 ├── .github/workflows/
 │   ├── auto-translate.yml           # docs-source/*.md 变更时自动转换为 MDX
@@ -112,6 +113,93 @@ waffo-docs/
 ├── CONTRIBUTING.md                  # 贡献指南
 └── AGENTS.md                        # AI Agent 工作指南
 ```
+
+## 写文档的工作流
+
+**约定：只写中文版，英文版由脚本自动生成。**
+
+```
+docs-source/（中文 .md 源文件）
+      ↓  scripts/md-to-mintlify.js
+  .mdx 文件（带 Mintlify 组件，Mintlify 渲染这里）
+      ↓  scripts/translate-docs.js
+docs-source-en/（英文 .md，再走一遍转换即可发布）
+```
+
+### 1. MD → MDX 转换（`scripts/md-to-mintlify.js`）
+
+把 `docs-source/` 下的原生 Markdown 智能转换为带 Mintlify 组件的 `.mdx` 文件，输出到项目根目录。
+
+**转换规则：**
+
+| Markdown 写法 | 转成 Mintlify 组件 |
+|---|---|
+| `> [!NOTE]` / `> [!WARNING]` 等 | `<Note>` / `<Warning>` / `<Tip>` / `<Check>` |
+| 数字列表 + 标题含"步骤/setup/how to" | `<Steps><Step>` |
+| 无序列表 + 标题含"功能/features/能力" | `<CardGroup cols={2}><Card>` |
+| 子标题在"FAQ/常见问题"下 | `<AccordionGroup><Accordion>` |
+| 连续多个代码块 | `<CodeGroup>` |
+| 单独一行的图片 `![](url)` | `<Frame>` |
+| `<!-- tabs -->...<!-- tab: Name -->` | `<Tabs><Tab>` |
+| 请求参数表格 | `<ParamField>` |
+| 响应字段表格 | `<ResponseField>` |
+| `<details><summary>` | `<Expandable>` |
+| 无语言标签的代码块 | 补 `text` 标签 |
+| 无 frontmatter | 从 H1 + 首段自动生成 |
+
+**用法：**
+
+```bash
+# 转换整个 docs-source/ 目录（输出到项目根目录）
+node scripts/md-to-mintlify.js docs-source/ .
+
+# 转换单个文件
+node scripts/md-to-mintlify.js docs-source/products/acquiring/overview.md products/acquiring/overview.mdx
+```
+
+---
+
+### 2. 中文 → 英文 AI 翻译（`scripts/translate-docs.js`）
+
+使用 AI 将 `docs-source/` 下的中文文档翻译成英文，输出到 `docs-source-en/`（已 gitignore）。
+
+翻译时自动保留：MDX 组件标签、代码块、URL、frontmatter 键名、内联代码。只翻译可见文本内容。
+
+**配置 API Key：**
+
+```bash
+# 使用 OpenAI（默认，走 Waffo 内部代理）
+export OPENAI_API_KEY=nk-worksmart
+
+# 或使用 Anthropic Claude
+export ANTHROPIC_API_KEY=sk-ant-...
+```
+
+**用法：**
+
+```bash
+# 翻译全部文档（docs-source/ → docs-source-en/）
+node scripts/translate-docs.js
+
+# 指定输入/输出目录
+node scripts/translate-docs.js docs-source/ docs-source-en/
+
+# 翻译单个文件
+node scripts/translate-docs.js docs-source/products/acquiring/overview.md /tmp/overview-en.md
+
+# 切换到 Anthropic Claude 翻译
+node scripts/translate-docs.js --provider anthropic
+
+# 强制重新翻译（忽略缓存）
+node scripts/translate-docs.js --force
+
+# 组合使用
+node scripts/translate-docs.js docs-source/products/ out/ --provider anthropic --force
+```
+
+**缓存机制：** 脚本根据文件内容哈希 + 模型版本做缓存（`.translate-cache.json`），重复运行只翻译有改动的文件，节省 API 用量。
+
+---
 
 ## AI-assisted writing
 

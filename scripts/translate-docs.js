@@ -21,6 +21,18 @@ const fs     = require('fs')
 const path   = require('path')
 const crypto = require('crypto')
 
+// 本地开发：自动加载 .env 文件（CI 环境变量优先，不会被覆盖）
+;(function loadDotEnv() {
+  const envPath = path.resolve('.env')
+  if (!fs.existsSync(envPath)) return
+  for (const line of fs.readFileSync(envPath, 'utf8').split('\n')) {
+    const m = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*)$/)
+    if (m && !process.env[m[1]]) {
+      process.env[m[1]] = m[2].trim().replace(/^["'](.*)["']$/, '$1')
+    }
+  }
+})()
+
 // ── Provider config ───────────────────────────────────────────────────────────
 
 const PROVIDERS = {

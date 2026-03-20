@@ -1,15 +1,17 @@
 # ============================================================
 # auto-translate.yml
 #
-# PURPOSE: When native Markdown files in docs-source/ change,
-# automatically translate them to Mintlify MDX format and
-# commit the results back to the repo.
+# 触发条件：docs-source/ 下有 .md 文件变更时自动运行
 #
-# This makes the docs repo the single source of truth:
-#   docs-source/  ← writers push native .md here
-#   products/     ← auto-generated .mdx lands here
+# 完整流水线：
+#   Step 1  中文 MD → 中文 MDX        (md-to-mintlify.js)
+#   Step 2  中文 MD → 英文 MD         (translate-docs.js，需要 OPENAI_API_KEY)
+#   Step 3  英文 MD → 英文 MDX        (md-to-mintlify.js，输出到 en/)
+#   Step 4  提交所有生成文件
 #
-# No manual conversion needed.
+# GitHub Secrets 配置（仓库 Settings → Secrets and variables → Actions）：
+#   OPENAI_API_KEY     — 必填，OpenAI 兼容接口 key
+#   ANTHROPIC_API_KEY  — 选填，切换 --provider anthropic 时使用
 # ============================================================
 
 name: Auto-translate docs-source to Mintlify MDX
@@ -23,7 +25,7 @@ on:
   workflow_dispatch:
     inputs:
       force_all:
-        description: "Re-translate all files (not just changed ones)"
+        description: "强制重新处理所有文件（忽略缓存）"
         type: boolean
         default: false
 
@@ -33,50 +35,67 @@ jobs:
     permissions:
       contents: write
 
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # needed to detect changed files
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "npm"
 
-      - name: Translate changed files
+      - name: Install dependencies
+        run: npm ci
+
+      # ── Step 1：中文 MD → 中文 MDX ───────────────────────────────────────────
+      - name: "[1/3] 中文 MD → 中文 MDX"
         run: |
           if [ "${{ github.event.inputs.force_all }}" = "true" ]; then
-            echo "Force mode: translating all files in docs-source/"
+            echo "全量模式：转换 docs-source/ 所有文件"
             node scripts/md-to-mintlify.js docs-source/ .
           else
-            # Only translate files changed in this push
-            CHANGED=$(git diff --name-only HEAD~1 HEAD -- 'docs-source/**/*.md' 2>/dev/null || \
-                      git diff --name-only HEAD -- 'docs-source/**/*.md')
+            CHANGED=$(git diff --name-only HEAD~1 HEAD -- 'docs-source/**/*.md' 2>/dev/null || true)
             if [ -z "$CHANGED" ]; then
-              echo "No .md files changed. Skipping."
+              echo "无变更文件，跳过。"
               exit 0
             fi
-            echo "Changed files:"
-            echo "$CHANGED"
+            echo "变更文件：$CHANGED"
             for file in $CHANGED; do
-              if [ -f "$file" ]; then
-                # Map docs-source/foo/bar.md → foo/bar.mdx
-                OUT="${file#docs-source/}"
-                OUT="${OUT%.md}.mdx"
-                node scripts/md-to-mintlify.js "$file" "$OUT"
-              fi
+              [ -f "$file" ] || continue
+              OUT="${file#docs-source/}"
+              OUT="${OUT%.md}.mdx"
+              node scripts/md-to-mintlify.js "$file" "$OUT"
             done
           fi
 
-      - name: Commit translated files
+      # ── Step 2：中文 MD → 英文 MD ────────────────────────────────────────────
+      - name: "[2/3] 中文 MD → 英文 MD"
         run: |
-          git config user.name "docs-translate-bot"
+          FORCE=""
+          [ "${{ github.event.inputs.force_all }}" = "true" ] && FORCE="--force"
+          node scripts/translate-docs.js docs-source/ docs-source-en/ $FORCE
+
+      # ── Step 3：英文 MD → 英文 MDX ──────────────────────────────────────────
+      - name: "[3/3] 英文 MD → 英文 MDX"
+        run: node scripts/md-to-mintlify.js docs-source-en/ en/
+
+      # ── Step 4：提交所有生成文件 ─────────────────────────────────────────────
+      - name: Commit generated files
+        run: |
+          git config user.name "docs-bot"
           git config user.email "bot@waffo.com"
-          git add "*.mdx" "**/*.mdx"
+          git add --force docs-source-en/ en/ || true
+          git add "*.mdx" "**/*.mdx" 2>/dev/null || true
           if git diff --staged --quiet; then
-            echo "Nothing to commit."
+            echo "无变更，跳过提交。"
           else
-            git commit -m "chore: auto-translate docs-source changes to MDX"
+            git commit -m "chore: auto-generate MDX and English translations [skip ci]"
             git push
           fi

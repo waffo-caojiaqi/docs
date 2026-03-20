@@ -1,3 +1,4 @@
 node_modules/
 .translate-cache.json
 docs-source-en/
+.env

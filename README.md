@@ -167,12 +167,11 @@ node scripts/md-to-mintlify.js docs-source/products/acquiring/overview.md produc
 
 **配置 API Key：**
 
-```bash
-# 使用 OpenAI（默认，走 Waffo 内部代理）
-export OPENAI_API_KEY=nk-worksmart
+复制 `.env.example` 为 `.env`，填入 key（`.env` 已 gitignore，不会提交）：
 
-# 或使用 Anthropic Claude
-export ANTHROPIC_API_KEY=sk-ant-...
+```bash
+cp .env.example .env
+# 然后编辑 .env，填入 OPENAI_API_KEY
 ```
 
 **用法：**
@@ -198,6 +197,38 @@ node scripts/translate-docs.js docs-source/products/ out/ --provider anthropic -
 ```
 
 **缓存机制：** 脚本根据文件内容哈希 + 模型版本做缓存（`.translate-cache.json`），重复运行只翻译有改动的文件，节省 API 用量。
+
+---
+
+### GitHub Actions 自动触发
+
+推送 `docs-source/` 下的 `.md` 文件时，CI 自动完成完整流水线：
+
+```
+push docs-source/*.md
+        ↓
+  [1/3] 中文 MD → 中文 MDX   (md-to-mintlify.js)
+        ↓
+  [2/3] 中文 MD → 英文 MD    (translate-docs.js)
+        ↓
+  [3/3] 英文 MD → 英文 MDX   (md-to-mintlify.js → en/)
+        ↓
+  自动 commit 所有生成文件
+```
+
+**配置 GitHub Secrets（一次性操作）：**
+
+1. 打开仓库页面 → **Settings** → **Secrets and variables** → **Actions**
+2. 点击 **New repository secret**，添加以下 secret：
+
+| Secret 名称 | 值 | 说明 |
+|---|---|---|
+| `OPENAI_API_KEY` | 你的 OpenAI key | 必填，AI 翻译使用 |
+| `ANTHROPIC_API_KEY` | 你的 Anthropic key | 选填，切换 provider 时使用 |
+
+3. 保存后，下次 push `docs-source/` 即自动触发。
+
+也可以在 GitHub Actions 页面手动触发，勾选"强制重新处理所有文件"可忽略缓存全量重跑。
 
 ---
 

@@ -25,14 +25,15 @@ const crypto = require('crypto')
 
 const PROVIDERS = {
   openai: {
-    model:      'gpt-4.1',
-    envKey:     'OPENAI_API_KEY',
-    cacheVer:   'openai:gpt-4.1:v1',
+    model:    'gpt-5.2',
+    baseURL:  'https://chatgpt.waffo.co/api/openai/v1',
+    envKey:   'OPENAI_API_KEY',
+    cacheVer: 'openai:gpt-5.2:v1',
   },
   anthropic: {
-    model:      'claude-sonnet-4-6',
-    envKey:     'ANTHROPIC_API_KEY',
-    cacheVer:   'anthropic:claude-sonnet-4-6:v1',
+    model:    'claude-sonnet-4-6',
+    envKey:   'ANTHROPIC_API_KEY',
+    cacheVer: 'anthropic:claude-sonnet-4-6:v1',
   },
 }
 
@@ -64,12 +65,12 @@ STRICT RULES — follow exactly, no exceptions:
 
 // ── Provider adapters ────────────────────────────────────────────────────────
 
-async function translateWithOpenAI(apiKey, model, content) {
+async function translateWithOpenAI(apiKey, model, baseURL, content) {
   const OpenAI = require('openai')
-  const client = new OpenAI({ apiKey })
+  const client = new OpenAI({ apiKey, ...(baseURL && { baseURL }) })
   const res = await client.chat.completions.create({
     model,
-    max_tokens: 8192,
+    max_completion_tokens: 8192,
     messages: [
       { role: 'system', content: SYSTEM },
       { role: 'user',   content },
@@ -111,7 +112,7 @@ function ensureDir(filePath) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
 }
 
-async function processFile({ inputPath, outputPath, provider, apiKey, model, cacheVer, cache, force }) {
+async function processFile({ inputPath, outputPath, provider, apiKey, model, baseURL, cacheVer, cache, force }) {
   const content = fs.readFileSync(inputPath, 'utf8')
 
   // Non-Chinese → copy as-is
@@ -127,7 +128,7 @@ async function processFile({ inputPath, outputPath, provider, apiKey, model, cac
   }
 
   const translated = provider === 'openai'
-    ? await translateWithOpenAI(apiKey, model, content)
+    ? await translateWithOpenAI(apiKey, model, baseURL, content)
     : await translateWithAnthropic(apiKey, model, content)
 
   ensureDir(outputPath)
@@ -177,7 +178,7 @@ async function main() {
     process.exit(1)
   }
 
-  const { model, envKey, cacheVer } = PROVIDERS[provider]
+  const { model, baseURL, envKey, cacheVer } = PROVIDERS[provider]
   const apiKey = process.env[envKey]
 
   if (!apiKey) {
@@ -215,7 +216,7 @@ async function main() {
   const tasks = filePairs.map(({ input, output }) => async () => {
     const rel = path.relative(process.cwd(), input)
     try {
-      const status = await processFile({ inputPath: input, outputPath: output, provider, apiKey, model, cacheVer, cache, force })
+      const status = await processFile({ inputPath: input, outputPath: output, provider, apiKey, model, baseURL, cacheVer, cache, force })
       done++
       counts[status]++
       const icon = { translated: '✓', cached: '·', copied: '→' }[status] || '?'

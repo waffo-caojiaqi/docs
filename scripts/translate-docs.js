@@ -77,7 +77,8 @@ STRICT RULES — follow exactly, no exceptions:
 
 // ── Provider adapters ────────────────────────────────────────────────────────
 
-async function translateWithOpenAI(apiKey, model, baseURL, content) {
+// 单次 API 调用（不含重试）
+async function callOpenAI(apiKey, model, baseURL, content) {
   const OpenAI = require('openai')
   const client = new OpenAI({ apiKey, ...(baseURL && { baseURL }) })
   const res = await client.chat.completions.create({
@@ -91,7 +92,7 @@ async function translateWithOpenAI(apiKey, model, baseURL, content) {
   return res.choices[0].message.content
 }
 
-async function translateWithAnthropic(apiKey, model, content) {
+async function callAnthropic(apiKey, model, content) {
   const Anthropic = require('@anthropic-ai/sdk')
   const client = new Anthropic({ apiKey })
   const res = await client.messages.create({
@@ -101,6 +102,63 @@ async function translateWithAnthropic(apiKey, model, content) {
     messages: [{ role: 'user', content }],
   })
   return res.content[0].text
+}
+
+// ── 重试 ──────────────────────────────────────────────────────────────────────
+
+const MAX_RETRIES   = 3
+const RETRY_DELAY   = 5000   // ms，每次重试前等待
+const CHUNK_LIMIT   = 6000   // 超过此字节数则分片翻译
+
+async function withRetry(fn, retries = MAX_RETRIES) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await fn()
+    } catch (err) {
+      const isLast = attempt === retries
+      if (isLast) throw err
+      const delay = RETRY_DELAY * attempt
+      process.stderr.write(`    重试 ${attempt}/${retries - 1}（${err.message}），等待 ${delay / 1000}s...\n`)
+      await new Promise(r => setTimeout(r, delay))
+    }
+  }
+}
+
+// ── 分片翻译（大文件按 H2 拆分）────────────────────────────────────────────────
+
+function splitByH2(content) {
+  // 保留 frontmatter + 第一段（H2 之前的所有内容）作为第一块
+  // 之后每个 H2 section 作为独立块
+  const parts = content.split(/(?=\n## )/g)
+  return parts.length > 1 ? parts : [content]
+}
+
+async function translateChunked(callFn, content) {
+  if (Buffer.byteLength(content, 'utf8') <= CHUNK_LIMIT) {
+    return withRetry(() => callFn(content))
+  }
+
+  const chunks = splitByH2(content)
+  if (chunks.length === 1) {
+    // 无法拆分（没有 H2），直接重试整体
+    return withRetry(() => callFn(content))
+  }
+
+  // 分片翻译，顺序执行避免并发引发超时
+  const results = []
+  for (let i = 0; i < chunks.length; i++) {
+    process.stderr.write(`    分片 ${i + 1}/${chunks.length}（${Buffer.byteLength(chunks[i], 'utf8')} bytes）\n`)
+    results.push(await withRetry(() => callFn(chunks[i])))
+  }
+  return results.join('\n')
+}
+
+async function translateWithOpenAI(apiKey, model, baseURL, content) {
+  return translateChunked(c => callOpenAI(apiKey, model, baseURL, c), content)
+}
+
+async function translateWithAnthropic(apiKey, model, content) {
+  return translateChunked(c => callAnthropic(apiKey, model, c), content)
 }
 
 // ── Cache ─────────────────────────────────────────────────────────────────────

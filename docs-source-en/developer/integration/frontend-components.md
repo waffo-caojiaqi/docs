@@ -1,0 +1,308 @@
+---
+title: "Frontend components"
+description: "Use Waffo Payment Element to embed the payment form directly into your web page, providing a fully customizable payment experience."
+---
+
+## Component usage
+
+Waffo Payment Element is a highly customizable payment UI component suite that supports seamlessly embedding the payment form into your existing web pages. Users stay on your domain throughout the process, effectively reducing payment drop-off rates.
+
+### Import the SDK
+
+```html
+<!-- Include Waffo.js in the HTML head -->
+<script src="https://js.waffo.com/v1/waffo.js"></script>
+```
+
+Or use the npm package:
+
+```bash
+npm install @waffo/js
+```
+
+```javascript
+import { loadWaffo } from '@waffo/js';
+const waffoPromise = loadWaffo('pk_test_xxx');
+```
+
+### Initialize the SDK
+
+```javascript
+const waffoPayment = new WaffoPayment({
+  apiKey: 'pk_test_xxx',
+  environment: 'test' | 'production',
+  locale: 'zh-CN' | 'en-US',
+  appearance: {
+    theme: 'light' | 'dark' | 'night',
+    variables: {
+      colorPrimary: '#0570de',
+      colorBackground: '#ffffff',
+      colorText: '#30313d',
+      borderRadius: '4px'
+    }
+  }
+});
+```
+
+### Create a Payment Element
+
+```javascript
+// Get clientSecret from your server
+const { clientSecret } = await fetch('/create-payment-intent').then(r => r.json());
+
+// Initialize an Elements instance
+const elements = waffoPayment.elements({ 
+  appearance, 
+  clientSecret 
+});
+
+// Create the payment component
+const paymentElement = elements.create('payment', {
+  layout: 'accordion',  // or 'tabs'
+  paymentMethodOrder: ['card', 'alipay', 'wechat_pay'],
+  defaultValues: {
+    billingDetails: {
+      name: '张三',
+      email: 'user@example.com',
+    }
+  }
+});
+
+// Mount to a DOM element
+paymentElement.mount('#payment-element');
+```
+
+### HTML structure
+
+```html
+<form id="payment-form">
+  <div id="payment-element">
+    <!-- Waffo Payment Element will render here -->
+  </div>
+  
+  <div id="error-message">
+    <!-- Error message display area -->
+  </div>
+  
+  <button type="submit" id="submit-button">
+    Confirm payment
+  </button>
+</form>
+```
+
+### Submit the payment
+
+```javascript
+const form = document.getElementById('payment-form');
+
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  
+  // Disable the submit button to prevent duplicate submissions
+  document.getElementById('submit-button').disabled = true;
+  
+  const { error } = await waffoPayment.confirmPayment({
+    elements,
+    confirmParams: {
+      return_url: 'https://example.com/order/complete',
+    },
+  });
+  
+  if (error) {
+    // Display the error message
+    const messageContainer = document.getElementById('error-message');
+    messageContainer.textContent = error.message;
+    document.getElementById('submit-button').disabled = false;
+  }
+  // If there is no error, the user will be redirected to return_url
+});
+```
+
+## Frontend integration
+
+### React integration example
+
+```jsx
+import { useState, useEffect } from 'react';
+
+function PaymentForm({ clientSecret }) {
+  const [waffo, setWaffo] = useState(null);
+  const [elements, setElements] = useState(null);
+  
+  useEffect(() => {
+    const instance = new WaffoPayment({ 
+      apiKey: 'pk_test_xxx',
+      appearance: { theme: 'light' }
+    });
+    setWaffo(instance);
+    
+    const elems = instance.elements({ clientSecret });
+    const paymentEl = elems.create('payment');
+    paymentEl.mount('#payment-element');
+    setElements(elems);
+  }, [clientSecret]);
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!waffo || !elements) return;
+    
+    const { error } = await waffo.confirmPayment({
+      elements,
+      confirmParams: { return_url: `${window.location.origin}/complete` },
+    });
+    
+    if (error) {
+      console.error(error.message);
+    }
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <div id="payment-element" />
+      <button type="submit">Pay</button>
+    </form>
+  );
+}
+```
+
+### Vue 3 integration example
+
+```vue
+<template>
+  <form @submit.prevent="handleSubmit">
+    <div id="payment-element"></div>
+    <button type="submit" :disabled="loading">
+      {{ loading ? 'Processing...' : 'Confirm payment' }}
+    </button>
+    <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+  </form>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+
+const props = defineProps(['clientSecret']);
+const loading = ref(false);
+const errorMessage = ref('');
+let waffoInstance = null;
+let elementsInstance = null;
+
+onMounted(() => {
+  waffoInstance = new WaffoPayment({ apiKey: 'pk_test_xxx' });
+  elementsInstance = waffoInstance.elements({ clientSecret: props.clientSecret });
+  
+  const paymentElement = elementsInstance.create('payment');
+  paymentElement.mount('#payment-element');
+});
+
+async function handleSubmit() {
+  loading.value = true;
+  
+  const { error } = await waffoInstance.confirmPayment({
+    elements: elementsInstance,
+    confirmParams: { return_url: `${window.location.origin}/complete` },
+  });
+  
+  if (error) {
+    errorMessage.value = error.message;
+    loading.value = false;
+  }
+}
+</script>
+```
+
+## Style customization
+
+### Full list of CSS Variables
+
+```javascript
+const appearance = {
+  theme: 'custom',
+  variables: {
+    // Colors
+    colorPrimary: '#2C8CFF',      // Primary color (buttons, selected states)
+    colorBackground: '#ffffff',    // Background color
+    colorText: '#30313d',          // Body text color
+    colorDanger: '#ef4444',        // Error/danger state color
+    colorSuccess: '#22c55e',       // Success state color
+    colorWarning: '#f59e0b',       // Warning state color
+    
+    // Spacing
+    spacingUnit: '4px',            // Base spacing unit
+    spacingGridRow: '16px',        // Row spacing
+    spacingGridColumn: '16px',     // Column spacing
+    
+    // Border radius
+    borderRadius: '8px',           // Input border radius
+    
+    // Typography
+    fontFamily: '"PingFang SC", "Helvetica Neue", sans-serif',
+    fontSizeBase: '14px',
+    fontSizeSm: '12px',
+    fontWeightNormal: '400',
+    fontWeightMedium: '500',
+  },
+  rules: {
+    // Fine-grained style control for specific components
+    '.Input': {
+      border: '1px solid #e5e7eb',
+      boxShadow: 'none',
+    },
+    '.Input:focus': {
+      borderColor: '#2C8CFF',
+      boxShadow: '0 0 0 3px rgba(44, 140, 255, 0.1)',
+    },
+    '.Label': {
+      fontWeight: '500',
+      color: '#374151',
+    },
+  }
+};
+```
+
+### Theme preset notes
+
+| Theme | Use case |
+|------|---------|
+| `light` | Default light theme, suitable for most websites |
+| `dark` | Dark theme, suitable for dark-themed websites |
+| `night` | Night mode, high-contrast dark theme |
+| `custom` | Fully custom, used with `variables` |
+
+## Event listeners
+
+```javascript
+paymentElement.on('change', (event) => {
+  if (event.complete) {
+    // The user has completed payment details; you can enable the submit button
+    document.getElementById('submit-button').disabled = false;
+  }
+  
+  if (event.error) {
+    // Display validation errors in real time
+    document.getElementById('error-message').textContent = event.error.message;
+  }
+});
+
+paymentElement.on('ready', () => {
+  // The component has finished loading; you can hide the loading state
+  document.getElementById('loading').style.display = 'none';
+});
+```
+
+## Supported languages
+
+| Language code | Language |
+|---------|------|
+| `zh-CN` | Simplified Chinese |
+| `zh-TW` | Traditional Chinese |
+| `en-US` | English |
+| `ja-JP` | Japanese |
+| `ko-KR` | Korean |
+
+```javascript
+const waffoPayment = new WaffoPayment({
+  apiKey: 'pk_test_xxx',
+  locale: 'zh-CN',  // Set the UI language
+});
+```

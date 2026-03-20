@@ -1,0 +1,81 @@
+---
+title: "Tools overview"
+description: "A collection of Waffo developer tools, including testing tools, error code lookup, Postman integration, and SDK downloads."
+---
+
+## Testing tools
+
+The Waffo sandbox environment provides the following testing tools to help you quickly validate your integration:
+
+**Test card numbers:**
+
+| Card number | Scenario |
+|------|------|
+| 4242 4242 4242 4242 | Payment success (Visa) |
+| 5555 5555 5555 4444 | Payment success (Mastercard) |
+| 4000 0000 0000 0002 | Card declined (`card_declined`) |
+| 4000 0000 0000 9995 | Insufficient funds (`insufficient_funds`) |
+| 4000 0025 0000 3155 | 3DS 2.0 authentication required |
+| 4000 0000 0000 3220 | 3DS authentication failed |
+| 4000 0000 0000 0077 | Payment success but a Dispute is triggered immediately |
+
+For test cards, you can use any future expiry date, any 3-digit CVV, and any US ZIP code for the billing address (e.g., 12345).
+
+**Webhook testing:**
+
+In the sandbox Merchant Portal, you can manually trigger any Webhook event to be sent to your configured endpoint, making local debugging convenient without having to run a real payment flow.
+
+## Error code lookup
+
+The Merchant Portal includes a built-in error code lookup tool. It supports searching by error code, keyword, or category. Each error code includes detailed explanations and recommended handling guidance:
+
+- **Network/system errors**: such as request timeouts, service unavailable, etc.
+- **Authentication errors**: invalid API Key, insufficient permissions, etc.
+- **Payment failure errors**: issuer decline, invalid card number, insufficient funds, etc.
+- **Business logic errors**: amount limit exceeded, duplicate orders, invalid parameter format, etc.
+
+## Status code reference
+
+The Waffo API uses standard HTTP status codes:
+
+| Status code | Description |
+|--------|------|
+| 200 | Request successful |
+| 201 | Resource created successfully |
+| 400 | Invalid request parameters |
+| 401 | Authentication failed (invalid API Key) |
+| 403 | Insufficient permissions |
+| 404 | Resource not found |
+| 409 | Resource conflict (e.g., duplicate order number) |
+| 422 | Business logic error (parameters are valid in format but fail business validation) |
+| 429 | Rate limit exceeded (Rate Limit) |
+| 500 | Internal server error |
+
+## Postman integration
+
+Waffo provides an official Postman Collection with request examples for all API endpoints and environment variable configuration:
+
+<Steps>
+  <Step title="Download the [Waffo Postman Collection](https://api.waffo.com/postman-collection.json)">
+  </Step>
+  <Step title="Import the Collection and Environment files into Postman">
+  </Step>
+  <Step title="Configure the `api_key` environment variable (use your sandbox API Key)">
+  </Step>
+  <Step title="Run requests directly without manually filling in request headers">
+  </Step>
+</Steps>
+
+## SDK downloads
+
+Waffo official SDKs support the following languages and provide type-safe API wrappers, Webhook signature verification, and error handling:
+
+| Language | Version | Installation |
+|------|------|---------|
+| Node.js / TypeScript | Latest stable | `npm install @waffo/node` |
+| Python | Latest stable | `pip install waffo` |
+| PHP | Latest stable | `composer require waffo/waffo-php` |
+| Java | Latest stable | Maven / Gradle |
+| Go | Latest stable | `go get github.com/waffo/waffo-go` |
+
+All SDKs are hosted in the [Waffo GitHub organization](https://github.com/waffo-org). If you encounter any issues, you can submit an Issue directly or contact Waffo technical support.

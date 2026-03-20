@@ -1,0 +1,249 @@
+---
+title: "Subscription Payment | Subscription Payment"
+description: "Provide an automated, high-success-rate payment collection solution for recurring billing scenarios"
+---
+## Chinese version
+
+### Product overview
+
+#### 1. Product overview (Overview)
+
+Provides an automated, high-success-rate payment collection solution for recurring billing scenarios. Through a one-time authorization, multiple automatic charge mechanism, it supports flexible billing cycle configuration and smart retries, helping merchants drive sustained subscription revenue growth and optimize the user experience.
+
+#### 2. What is subscription payment?
+
+Subscription Payment, also known as automatic debit or recurring charges, refers to a payment model where the user completes a mandate/authorization at the first payment, and subsequent charges are automatically initiated by the system according to the agreed cycle (such as weekly/monthly/annually). By automating the “payment behavior,” it significantly reduces the user’s renewal effort and is core infrastructure for SaaS services, streaming memberships, and paid content businesses.
+
+#### 3. Core capabilities
+
+1. **Flexible billing cycles**: Supports standard cycles such as weekly, monthly, quarterly, and annually, and also supports custom day-based intervals to meet diverse business needs.
+2. **Smart retry mechanism**: Built-in configurable retry strategies (e.g., 24h/48h intervals), and optimizes charge success rates through detailed failure code analysis.
+3. **Full lifecycle management**: Provides end-to-end management from subscription creation, trial periods (free/discounted), automatic charges, upgrades/downgrades, to cancellation.
+4. **Account updater**: Integrates VAU/ABU services to automatically update card information when a user’s card expires or is replaced, maintaining subscription continuity.
+
+#### 4. Applicable scenarios
+
+- **Streaming services**: Monthly/annual membership auto-renewal for video and music platforms.
+- **SaaS software services**: Recurring subscription billing for productivity software and design tools.
+- **Paid content**: Membership services for knowledge columns and online courses.
+- **Gaming subscriptions**: Auto-renewal for monthly/season passes and in-game items.
+
+---
+
+### Supported payment methods
+
+With Waffo, you can connect mainstream channels that support “saved payment methods” and “merchant-initiated transactions (MIT).”
+
+#### a. Bank card payments (Credit/Debit Cards)
+
+- **Supported schemes**: Visa, Mastercard, JCB, and other major global card networks.
+- **Key features**:
+  - **Tokenization security**: Create a Token on the first payment; subsequent charges use MIT (Merchant Initiated Transaction) without re-entering CVV.
+  - **Account updater (VAU/ABU)**: Automatically syncs after card expiry or replacement to reduce passive churn.
+
+#### b. Digital wallets (Digital Wallets)
+
+- Supports Token authorization management for mainstream wallets such as Apple Pay and Google Pay.
+- After the user completes the initial wallet authorization, subsequent subscription cycle charges are automatic with no user involvement.
+
+#### c. Local payments (Local Payments)
+
+- Some local payment methods (e.g., direct debit in Southeast Asia) support subscription models.
+- For specific availability, please consult your Waffo Customer Success Manager.
+
+---
+
+### Subscription models and experience
+
+#### 1. Core business models
+
+Waffo supports two mainstream subscription models:
+
+<CardGroup cols={2}>
+  <Card title="Service-first" icon="play">
+    Activate the service first, then complete the first payment. Suitable for trial experiences or low-barrier acquisition scenarios. For example: “7-day free trial, auto-renew on expiry.”
+  </Card>
+  <Card title="Payment-first" icon="credit-card">
+    Complete the first payment first, then activate the service. Suitable for standard subscription products to ensure benefits are granted only after payment succeeds.
+  </Card>
+</CardGroup>
+
+#### 2. Trial and promotion configuration
+
+- **Free trial**: Supports configuring an N-day free trial and automatically converts to a paid subscription after the trial ends.
+- **First-period discount**: Set a special price for the first month/first year, then revert to the standard price upon expiry.
+- **Coupon integration**: Supports binding coupon codes via API to dynamically adjust subscription amounts.
+
+#### 3. Charging and retry experience
+
+<Steps>
+  <Step title="Charge triggered at renewal">The system automatically initiates an MIT charge request before the subscription cycle expires.</Step>
+  <Step title="Initial charge attempt">Sends a charge request to the linked payment method and returns the result in real time.</Step>
+  <Step title="Smart retries on failure">If the charge fails, automatically retries according to the configured strategy based on the failure reason (insufficient funds/card issues, etc.) (default: 24h/48h/72h).</Step>
+  <Step title="User notifications">Notifies the user of the charge result via email/message and guides them to proactively update their payment method.</Step>
+  <Step title="Churn handling">After exceeding the maximum retry attempts, marks the subscription as “pending payment” and triggers passive churn recovery workflows.</Step>
+</Steps>
+
+---
+
+### Development and integration
+
+#### 1. Hosted Checkout integration (Hosted Checkout)
+
+No front-end development is required—complete subscription mandate signing via Waffo’s hosted checkout.
+
+- After the user completes the first payment, Waffo automatically creates the subscription agreement and returns `subscription_id`.
+- Subsequent recurring charges are managed automatically by Waffo, with no additional merchant actions required.
+
+#### 2. API integration (API Integration)
+
+Implement deeply customized subscription management via a pure API approach:
+
+1. Call `POST /subscriptions` to create a subscription plan.
+2. Bind the user’s payment method via the Tokenization API.
+3. Waffo automatically initiates charges on each billing cycle and pushes Webhook notifications.
+4. The merchant handles charge success/failure logic based on Webhook events.
+
+---
+
+### Security and compliance
+
+- **MIT authorization standards**: Strictly follows the Visa/Mastercard MIT authorization framework to ensure each automatic charge is compliant.
+- **PSD2 & SCA compliance**: In Europe, the initial mandate requires Strong Customer Authentication (SCA); subsequent MIT charges are exempt from additional authentication.
+- **Data security**: Payment credentials (Token) are stored encrypted, and the raw card number is never stored in the merchant system.
+
+---
+
+### FAQ
+
+**Q: After a user cancels a subscription, do they still retain benefits for the current period?**
+
+A: Post-cancellation behavior is defined by the merchant. Typically, benefits for the currently paid period remain available until the end of the period.
+
+**Q: How should repeated charge failures be handled?**
+
+A: After exceeding the maximum retry attempts (configurable), the subscription status changes to `past_due`. Waffo notifies the merchant via Webhook, and the merchant can trigger proactive dunning flows or suspend service.
+
+**Q: How are subscription upgrades/downgrades handled?**
+
+A: Waffo supports proration. Upgrades take effect immediately and collect the difference; downgrades take effect in the next billing cycle.
+
+---
+## English Version
+
+### 1. Product Introduction
+
+#### 1.1 Overview
+
+Provides an automated, high-success-rate billing solution for recurring payment scenarios. Through a one-time authorization and multiple automatic billing mechanism, it supports flexible billing cycle configuration and intelligent retry, helping merchants achieve continuous subscription revenue growth and optimize user experience.
+
+#### 1.2 What is Subscription Payment?
+
+Subscription Payment, also known as automatic deduction or recurring billing, is a payment model where users complete authorization on the first payment, and the system subsequently initiates automatic charges according to the agreed period (weekly/monthly/yearly). By automating the "payment behavior," it greatly reduces users' renewal effort — it is the core infrastructure for SaaS services, streaming memberships, and paid content businesses.
+
+#### 1.3 Core Capabilities
+
+1. **Flexible Billing Cycles**: Supports standard cycles (weekly, monthly, quarterly, yearly) and custom day intervals to meet diverse business needs.
+2. **Smart Retry Mechanism**: Built-in configurable retry strategies (e.g., 24h/48h intervals) with detailed failure code analysis to optimize payment success rates.
+3. **Full Lifecycle Management**: Complete management from subscription creation, trial periods (free/discounted), automatic billing, upgrades/downgrades, to cancellation.
+4. **Account Updater**: Integrated VAU/ABU service automatically updates card information when users' cards expire or are replaced, maintaining subscription continuity.
+
+#### 1.4 Use Cases
+
+- **Streaming Services**: Monthly/yearly auto-renewal for video and music platforms.
+- **SaaS Software**: Recurring billing for office software and design tools.
+- **Paid Content**: Membership services for knowledge platforms and online courses.
+- **Gaming Subscriptions**: Auto-renewal for monthly/seasonal passes and in-game items.
+
+---
+
+### 2. Supported Payment Methods
+
+#### 2.1 Bank Cards (Credit/Debit Cards)
+
+- **Supported Networks**: Visa, Mastercard, JCB, and other global card networks.
+- **Key Features**:
+  - **Tokenization Security**: Creates a Token on first payment; subsequent charges use MIT (Merchant Initiated Transaction) mode — no CVV re-entry required.
+  - **Account Updater (VAU/ABU)**: Automatically syncs updated card details, reducing passive churn.
+
+#### 2.2 Digital Wallets
+
+- Supports Token authorization management for Apple Pay, Google Pay, and other leading wallets.
+- Once users complete the initial wallet authorization, subsequent subscription cycles are charged automatically without user intervention.
+
+#### 2.3 Local Payment Methods
+
+- Some local payment methods (e.g., direct bank debit in Southeast Asia) support subscription mode.
+- Specific availability varies by market — please consult your Waffo Customer Success Manager.
+
+---
+
+### 3. Subscription Models & Experience
+
+#### 3.1 Core Business Models
+
+<CardGroup cols={2}>
+  <Card title="Service-First" icon="play">
+    Activate service first, then complete initial payment. Ideal for trial experiences or low-friction acquisition. Example: "Free trial for 7 days, then auto-renew."
+  </Card>
+  <Card title="Payment-First" icon="credit-card">
+    Complete initial payment first, then activate service. Suitable for standard subscription products ensuring successful payment before granting access.
+  </Card>
+</CardGroup>
+
+#### 3.2 Trial & Promotion Configuration
+
+- **Free Trial Period**: Configure N-day free trials that automatically convert to paid subscriptions.
+- **First-Period Discounts**: Set introductory pricing for the first month/year, reverting to standard price thereafter.
+- **Coupon Integration**: Bind coupon codes via API to dynamically adjust subscription amounts.
+
+#### 3.3 Deduction & Retry Logic
+
+<Steps>
+  <Step title="Billing Trigger">System automatically initiates MIT charge request before subscription period expires.</Step>
+  <Step title="Initial Charge">Sends charge request to the bound payment method and receives real-time result.</Step>
+  <Step title="Smart Retry">If charge fails, retries automatically based on failure reason (insufficient funds, card issue, etc.) per configured strategy (default: 24h/48h/72h).</Step>
+  <Step title="User Notification">Notifies users of charge results via email/message, prompting proactive payment method updates.</Step>
+  <Step title="Churn Handling">After maximum retries, marks subscription as "past_due" and triggers passive churn recovery flow.</Step>
+</Steps>
+
+---
+
+### 4. Integration
+
+#### 4.1 Hosted Checkout
+
+No frontend development required — use Waffo's hosted checkout to complete subscription authorization.
+
+#### 4.2 API Integration
+
+Full API-based subscription management for deep customization:
+
+1. Call `POST /subscriptions` to create a subscription plan.
+2. Use the Tokenization API to bind user payment methods.
+3. Waffo automatically initiates charges each billing cycle and pushes Webhook notifications.
+4. Merchants handle success/failure logic based on Webhook events.
+
+---
+
+### 5. Security & Compliance
+
+- **MIT Authorization Standards**: Strictly follows Visa/Mastercard MIT authorization frameworks for compliant automatic billing.
+- **PSD2 & SCA Compliance**: European market requires Strong Customer Authentication (SCA) for initial authorization; subsequent MIT transactions are exempt.
+- **Data Security**: Payment credentials (Tokens) are encrypted at rest; original card numbers never touch merchant systems.
+
+---
+
+### 6. FAQ (Frequently Asked Questions)
+
+**Q: If a user cancels, do benefits continue for the current period?**
+
+A: Post-cancellation handling is merchant-configurable. Typically, benefits for the already-paid period remain active until cycle end.
+
+**Q: What happens after multiple failed charges?**
+
+A: After exceeding the maximum retry count (configurable), the subscription status changes to `past_due`. Waffo notifies merchants via Webhook to trigger proactive collection or service suspension.
+
+**Q: How are subscription upgrades/downgrades handled?**
+
+A: Waffo supports prorated billing. Upgrades take effect immediately with differential charges; downgrades take effect at the next billing cycle.

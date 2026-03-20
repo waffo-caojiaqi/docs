@@ -1,0 +1,267 @@
+---
+title: "SDK downloads"
+description: "Download the official Waffo SDKs. Supports mainstream platforms such as JavaScript/Node.js, iOS, and Android for fast payment integration."
+---
+
+## JavaScript SDK
+
+### Browser (frontend)
+
+Waffo.js is a browser-based frontend payment SDK. It ensures payment security through an iframe and a secure token mechanism.
+
+**Include via CDN (recommended):**
+
+```html
+<script src="https://js.waffo.com/v1/waffo.js"></script>
+```
+
+**npm package:**
+
+```bash
+npm install @waffo/js
+# or
+yarn add @waffo/js
+# or
+pnpm add @waffo/js
+```
+
+```javascript
+import { loadWaffo } from '@waffo/js';
+
+// Load the SDK asynchronously
+const waffo = await loadWaffo('pk_test_xxx', {
+  locale: 'zh-CN',
+});
+```
+
+**React-specific wrapper:**
+
+```bash
+npm install @waffo/react
+```
+
+```jsx
+import { WaffoProvider, PaymentElement, useWaffo, useElements } from '@waffo/react';
+
+function App() {
+  return (
+    <WaffoProvider apiKey="pk_test_xxx">
+      <CheckoutForm />
+    </WaffoProvider>
+  );
+}
+
+function CheckoutForm() {
+  const waffo = useWaffo();
+  const elements = useElements();
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const { error } = await waffo.confirmPayment({
+      elements,
+      confirmParams: { return_url: 'https://example.com/complete' },
+    });
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <PaymentElement />
+      <button type="submit">Pay</button>
+    </form>
+  );
+}
+```
+
+### Server (Node.js)
+
+```bash
+npm install @waffo/node
+```
+
+```javascript
+const Waffo = require('@waffo/node');
+
+const waffo = new Waffo('sk_test_xxx', {
+  apiVersion: '2024-01',       // Pin the API version
+  timeout: 30000,               // Request timeout (ms)
+  maxNetworkRetries: 2,         // Automatic retries for network errors
+  host: 'api.waffo.com',        // Custom API domain (optional)
+});
+```
+
+## iOS SDK
+
+### Installation
+
+**Swift Package Manager (recommended):**
+
+In Xcode: `File` → `Add Package Dependencies`, then enter the repository URL:
+
+```
+https://github.com/waffo/waffo-ios
+```
+
+Or add it to `Package.swift`:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/waffo/waffo-ios", from: "1.0.0")
+]
+```
+
+**CocoaPods:**
+
+```ruby
+# Podfile
+pod 'WaffoPayment', '~> 1.0'
+```
+
+```bash
+pod install
+```
+
+### Basic usage
+
+```swift
+import WaffoPayment
+
+// Initialize in AppDelegate or the @main entry point
+WaffoPayment.configure(publishableKey: "pk_test_xxx")
+
+// In the payment view controller
+class PaymentViewController: UIViewController {
+    
+    var paymentSheet: WaffoPaymentSheet?
+    
+    func startPayment(clientSecret: String) {
+        var configuration = WaffoPaymentSheet.Configuration()
+        configuration.merchantDisplayName = "Your Store Name"
+        configuration.appearance = PaymentSheet.Appearance()
+        
+        paymentSheet = WaffoPaymentSheet(
+            paymentIntentClientSecret: clientSecret,
+            configuration: configuration
+        )
+        
+        paymentSheet?.present(from: self) { [weak self] result in
+            switch result {
+            case .completed:
+                print("Payment succeeded")
+            case .failed(let error):
+                print("Payment failed: \(error.localizedDescription)")
+            case .canceled:
+                print("User canceled the payment")
+            }
+        }
+    }
+}
+```
+
+### System requirements
+
+- iOS 13.0+
+- Swift 5.5+
+- Xcode 13+
+
+## Android SDK
+
+### Installation
+
+Add the dependency in `app/build.gradle`:
+
+```groovy
+dependencies {
+    implementation 'com.waffo:payment:1.0.0'
+}
+```
+
+Or use Kotlin DSL (`build.gradle.kts`):
+
+```kotlin
+dependencies {
+    implementation("com.waffo:payment:1.0.0")
+}
+```
+
+After syncing Gradle, it is ready to use.
+
+### Basic usage
+
+```kotlin
+import com.waffo.payment.WaffoPaymentSheet
+import com.waffo.payment.WaffoPaymentSheetResult
+
+class CheckoutActivity : AppCompatActivity() {
+    
+    private lateinit var paymentSheet: WaffoPaymentSheet
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        paymentSheet = WaffoPaymentSheet(this, ::onPaymentResult)
+    }
+    
+    fun startPayment(clientSecret: String) {
+        val configuration = WaffoPaymentSheet.Configuration(
+            merchantDisplayName = "Your Store Name",
+        )
+        
+        paymentSheet.presentWithPaymentIntent(
+            paymentIntentClientSecret = clientSecret,
+            configuration = configuration
+        )
+    }
+    
+    private fun onPaymentResult(result: WaffoPaymentSheetResult) {
+        when (result) {
+            is WaffoPaymentSheetResult.Completed -> {
+                // Payment succeeded
+            }
+            is WaffoPaymentSheetResult.Failed -> {
+                // Payment failed: result.error
+            }
+            is WaffoPaymentSheetResult.Canceled -> {
+                // User canceled
+            }
+        }
+    }
+}
+```
+
+### System requirements
+
+- Android 5.0 (API 21)+
+- Kotlin 1.6+
+- AndroidX
+
+## Release history
+
+### JavaScript SDK
+
+| Version | Release date | Key updates |
+|------|---------|---------|
+| `v1.4.0` | 2024-12 | Added TrueMoney and GrabPay support; improved 3DS experience |
+| `v1.3.0` | 2024-09 | React 18 compatibility improvements; added `night` theme preset |
+| `v1.2.0` | 2024-06 | Added multi-column layout for Payment Element; performance improvements |
+| `v1.1.0` | 2024-03 | Added Korean (ko-KR) support; fixed Safari compatibility issues |
+| `v1.0.0` | 2024-01 | General availability release |
+
+### iOS SDK
+
+| Version | Release date | Key updates |
+|------|---------|---------|
+| `v1.2.0` | 2024-12 | Added support for iOS 17 Dynamic Island notifications; enhanced Apple Pay |
+| `v1.1.0` | 2024-09 | Added SwiftUI component support |
+| `v1.0.0` | 2024-01 | General availability release |
+
+### Android SDK
+
+| Version | Release date | Key updates |
+|------|---------|---------|
+| `v1.2.0` | 2024-12 | Improved Google Pay experience; added Jetpack Compose support |
+| `v1.1.0` | 2024-09 | Added Material 3 theme support |
+| `v1.0.0` | 2024-01 | General availability release |
+
+<Note>
+We recommend always using the latest SDK version to get the newest payment method support and security updates. For upgrade guidance, refer to the migration guide for each version.
+</Note>

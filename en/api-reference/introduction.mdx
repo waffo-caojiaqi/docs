@@ -1,0 +1,41 @@
+---
+title: 'API Reference'
+description: 'Waffo Acquiring API — cross-border payment endpoints for order management and merchant configuration'
+---
+
+## Base URL
+
+All API requests should be made to your assigned Waffo endpoint. Contact your integration manager for your production base URL.
+
+```text
+https://<your-waffo-endpoint>
+```
+
+## Authentication
+
+All requests must be signed using your **Merchant ID** and **API Key**. Refer to the [API Security](/integration/api-security) guide for the full signature algorithm.
+
+## Request Format
+
+- All endpoints accept `application/json` request bodies
+- All endpoints use `POST` method
+- Timestamps follow **ISO 8601** format (e.g. `2024-01-01T00:00:00.000Z`)
+
+## Response Format
+
+Every response wraps the payload in a standard envelope:
+
+```json
+{
+  "code": "SUCCESS",
+  "msg": "OK",
+  "data": { ... }
+}
+```
+
+## Endpoints
+
+| Group | Endpoints |
+|-------|-----------|
+| **Order Management** | Create, Inquiry, Cancel, Refund, Refund Inquiry |
+| **Configuration** | Merchant Config, Pay Method Config |

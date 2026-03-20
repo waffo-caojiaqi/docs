@@ -1,0 +1,159 @@
+---
+title: "状态码说明"
+description: "Waffo 支付系统中交易、订单和 Webhook 事件的完整状态说明，帮助您准确处理各类业务状态。"
+---
+
+## 交易状态
+
+### PaymentIntent 状态流转
+
+PaymentIntent（支付意图）是 Waffo 中表示一次支付请求的核心对象，其状态按以下流程流转：
+
+```text
+created → requires_payment_method → requires_confirmation → requires_action → processing → succeeded
+                                                                                         ↘ canceled
+```
+
+| 状态 | 说明 | 下一步操作 |
+|------|------|-----------|
+| `requires_payment_method` | 等待绑定支付方式 | 引导用户填写或选择支付方式 |
+| `requires_confirmation` | 已绑定支付方式，等待确认 | 调用 `confirm` 接口发起支付 |
+| `requires_action` | 需要用户额外操作（如 3DS 验证） | 展示 3DS 验证界面，等待用户完成 |
+| `processing` | 支付处理中（如银行异步处理） | 监听 Webhook，等待最终状态 |
+| `succeeded` | 支付成功 | 完成订单，发货/开通服务 |
+| `canceled` | 支付已取消 | 通知用户支付取消，视情况允许重新发起 |
+
+### Payment 状态
+
+| 状态 | 说明 |
+|------|------|
+| `pending` | 支付处理中 |
+| `succeeded` | 支付成功 |
+| `failed` | 支付失败 |
+| `refunded` | 已全额退款 |
+| `partially_refunded` | 已部分退款 |
+| `disputed` | 发生争议/拒付 |
+
+## 订单状态
+
+### Checkout Session 状态
+
+| 状态 | 说明 |
+|------|------|
+| `open` | Session 已创建，等待用户完成支付 |
+| `complete` | 用户已完成支付 |
+| `expired` | Session 已过期（默认 24 小时） |
+
+### Refund（退款）状态
+
+| 状态 | 说明 |
+|------|------|
+| `pending` | 退款处理中 |
+| `succeeded` | 退款成功，资金将在 5-10 个工作日内退回 |
+| `failed` | 退款失败，需人工处理 |
+| `canceled` | 退款已取消 |
+| `requires_action` | 需要商户或用户额外操作 |
+
+### Subscription（订阅）状态
+
+| 状态 | 说明 |
+|------|------|
+| `incomplete` | 首次支付尚未完成 |
+| `incomplete_expired` | 首次支付超时，订阅失效 |
+| `trialing` | 试用期中 |
+| `active` | 订阅有效，按周期正常续费 |
+| `past_due` | 续费失败，处于追收期 |
+| `canceled` | 订阅已取消 |
+| `unpaid` | 续费失败且追收无果，订阅暂停 |
+| `paused` | 订阅暂停（主动操作） |
+
+## Webhook 事件状态
+
+Waffo 通过 Webhook 将支付事件实时推送到您的服务器。以下是完整的事件类型列表：
+
+### 支付事件
+
+| 事件类型 | 触发时机 |
+|---------|---------|
+| `payment_intent.created` | PaymentIntent 创建时 |
+| `payment_intent.processing` | 支付开始处理时 |
+| `payment_intent.succeeded` | 支付成功时 |
+| `payment_intent.payment_failed` | 支付失败时 |
+| `payment_intent.canceled` | PaymentIntent 取消时 |
+| `payment_intent.requires_action` | 需要用户操作（3DS 等）时 |
+
+### 退款事件
+
+| 事件类型 | 触发时机 |
+|---------|---------|
+| `charge.refunded` | 退款成功时 |
+| `refund.created` | 退款请求创建时 |
+| `refund.updated` | 退款状态变更时 |
+| `refund.failed` | 退款失败时 |
+
+### 订阅事件
+
+| 事件类型 | 触发时机 |
+|---------|---------|
+| `customer.subscription.created` | 订阅创建时 |
+| `customer.subscription.updated` | 订阅信息变更时 |
+| `customer.subscription.deleted` | 订阅取消时 |
+| `customer.subscription.trial_will_end` | 试用期即将结束（提前 3 天） |
+| `invoice.payment_succeeded` | 订阅续费成功时 |
+| `invoice.payment_failed` | 订阅续费失败时 |
+
+### 争议事件
+
+| 事件类型 | 触发时机 |
+|---------|---------|
+| `charge.dispute.created` | 用户发起争议时 |
+| `charge.dispute.updated` | 争议状态变更时 |
+| `charge.dispute.closed` | 争议处理结束时 |
+
+### Payout 事件
+
+| 事件类型 | 触发时机 |
+|---------|---------|
+| `payout.created` | Payout 创建时 |
+| `payout.paid` | Payout 资金已到账 |
+| `payout.failed` | Payout 失败时 |
+| `payout.canceled` | Payout 取消时 |
+
+## Webhook 接收处理示例
+
+```javascript
+app.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
+  const signature = req.headers['waffo-signature'];
+  
+  let event;
+  try {
+    event = waffo.webhooks.constructEvent(req.body, signature, process.env.WEBHOOK_SECRET);
+  } catch (err) {
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+  
+  // 根据事件类型处理
+  switch (event.type) {
+    case 'payment_intent.succeeded':
+      await handlePaymentSuccess(event.data.object);
+      break;
+    case 'payment_intent.payment_failed':
+      await handlePaymentFailed(event.data.object);
+      break;
+    case 'customer.subscription.deleted':
+      await handleSubscriptionCanceled(event.data.object);
+      break;
+    case 'invoice.payment_failed':
+      await handleRenewalFailed(event.data.object);
+      break;
+    default:
+      console.log(`未处理的事件类型: ${event.type}`);
+  }
+  
+  res.json({ received: true });
+});
+```
+
+<Note>
+Webhook 处理应该是幂等的，因为 Waffo 在网络超时等情况下会重试发送相同事件。建议在处理前检查事件是否已被处理过。
+</Note>

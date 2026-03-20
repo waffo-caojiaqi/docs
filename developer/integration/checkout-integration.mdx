@@ -1,0 +1,204 @@
+---
+title: "收银台集成"
+description: "将 Waffo 收银台集成到您的网站，支持托管跳转和嵌入式两种模式，提供完整的支付体验。"
+---
+
+## 集成步骤
+
+Waffo 收银台提供两种集成模式：**托管模式（Hosted）** 将用户重定向至 Waffo 域名下的支付页面；**嵌入模式（Embedded）** 通过 JavaScript SDK 将支付界面直接渲染在您的网页中。
+
+### 系统架构
+
+```text
+商户系统 -> SDK -> Iframe -> Payment Service -> 支付网关
+```
+
+核心组件说明：
+- **SDK Layer**：统一 API 接口，封装底层通信细节
+- **UI Components**：可定制化的支付表单组件
+- **Payment Engine**：支付流程引擎，处理状态机和重试逻辑
+- **Security Layer**：安全认证层，负责密钥管理和请求签名
+
+### 第一步：服务端创建 Checkout Session
+
+```javascript
+// Node.js
+const Waffo = require('@waffo/node');
+const waffo = new Waffo(process.env.WAFFO_SECRET_KEY);
+
+const session = await waffo.checkout.sessions.create({
+  payment_method_types: ['card', 'alipay', 'wechat_pay'],
+  line_items: [
+    {
+      price_data: {
+        currency: 'usd',
+        product_data: { name: '商品名称' },
+        unit_amount: 2000,  // $20.00
+      },
+      quantity: 1,
+    },
+  ],
+  mode: 'payment',
+  success_url: 'https://example.com/success?session_id={CHECKOUT_SESSION_ID}',
+  cancel_url: 'https://example.com/cancel',
+});
+
+// 返回 client_secret 给前端
+res.json({ clientSecret: session.client_secret });
+```
+
+### 第二步：前端 SDK 初始化
+
+<CodeGroup>
+```html
+<script src="https://js.waffo.com/v1/waffo.js"></script>
+```
+```javascript
+const waffoPayment = new WaffoPayment({
+  apiKey: 'pk_test_xxx',
+  environment: 'test' | 'production',
+  locale: 'zh-CN' | 'en-US',
+  appearance: {
+    theme: 'light' | 'dark' | 'night',
+    variables: {
+      colorPrimary: '#0570de',
+      colorBackground: '#ffffff',
+      colorText: '#30313d',
+      borderRadius: '4px'
+    }
+  }
+});
+```
+</CodeGroup>
+
+### 第三步：挂载收银台
+
+**托管模式（Hosted/Redirect）：**
+
+```javascript
+const checkout = waffoPayment.initCheckout({
+  clientSecret: 'cs_xxx',
+  successUrl: 'https://example.com/success',
+  cancelUrl: 'https://example.com/cancel',
+  elementsOptions: { appearance }
+});
+
+checkout.mount('#checkout-container');
+```
+
+**嵌入模式（Embedded）：**
+
+```javascript
+const elements = waffoPayment.elements({ appearance, clientSecret });
+const paymentElement = elements.create('payment', {
+  layout: 'accordion',
+  paymentMethodOrder: ['card', 'alipay', 'wechat_pay']
+});
+paymentElement.mount('#payment-element');
+
+// 提交支付
+const { error } = await waffoPayment.confirmPayment({
+  elements,
+  confirmParams: {
+    return_url: 'https://example.com/complete',
+  },
+});
+```
+
+## 参数配置
+
+### Checkout Session 核心参数
+
+<ParamField name="payment_method_types" type="array" required>
+  支持的支付方式列表
+</ParamField>
+
+<ParamField name="line_items" type="array" required>
+  商品行项目
+</ParamField>
+
+<ParamField name="mode" type="string" required>
+  `payment`（一次性）或 `subscription`（订阅）
+</ParamField>
+
+<ParamField name="success_url" type="string" required>
+  支付成功后的跳转地址
+</ParamField>
+
+<ParamField name="cancel_url" type="string" required>
+  用户取消支付后的跳转地址
+</ParamField>
+
+<ParamField name="customer" type="string">
+  已有客户 ID，用于关联支付记录
+</ParamField>
+
+<ParamField name="metadata" type="object">
+  自定义业务数据，将在 Webhook 中透传
+</ParamField>
+
+<ParamField name="expires_at" type="timestamp">
+  Session 过期时间，默认 24 小时
+</ParamField>
+
+
+## 定制化选项
+
+Waffo 收银台支持三种定制层级：
+
+### 1. 商户后台（可视化配置）
+
+在 [portal.waffo.com](https://portal.waffo.com) 的「收银台设置」中，通过可视化界面配置品牌颜色、Logo、按钮样式等。此配置将自动应用于所有 Hosted 模式的收银台页面。
+
+### 2. API 参数（服务端控制）
+
+在创建 Checkout Session 时，通过 `appearance` 参数传入配置：
+
+```javascript
+const session = await waffo.checkout.sessions.create({
+  // ...其他参数
+  appearance: {
+    theme: 'light',
+    variables: {
+      colorPrimary: '#FF6B35',
+    }
+  }
+});
+```
+
+### 3. 客户端 SDK（前端级别）
+
+在 SDK 初始化时传入 `appearance` 配置，优先级最高：
+
+```javascript
+const waffoPayment = new WaffoPayment({
+  apiKey: 'pk_test_xxx',
+  appearance: {
+    theme: 'custom',
+    variables: {
+      colorPrimary: '#2C8CFF',
+      colorBackground: '#f8f9fa',
+      colorText: '#1a1a2e',
+      colorDanger: '#ef4444',
+      spacingUnit: '4px',
+      borderRadius: '8px',
+      fontFamily: '"PingFang SC", "Helvetica Neue", sans-serif'
+    }
+  }
+});
+```
+
+### 主题预设
+
+| 主题 | 说明 |
+|------|------|
+| `light` | 默认浅色主题 |
+| `dark` | 深色主题 |
+| `night` | 夜间模式，适合深色背景网站 |
+| `custom` | 完全自定义，配合 CSS Variables 使用 |
+
+## 接口文档
+
+完整的 API 接口参数和响应格式，请参阅：
+- [一次性支付 API](/developer/api/one-time-payment)
+- [通用 API（退款、查询、Webhook）](/developer/api/common)

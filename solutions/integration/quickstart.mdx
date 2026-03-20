@@ -1,0 +1,52 @@
+---
+title: "快速开始"
+description: "5 分钟完成 Waffo 基础集成，从注册账号到发起第一笔测试支付。"
+---
+
+## 集成指南
+
+欢迎使用 Waffo！本指南将帮助您在最短时间内完成基础集成并发起第一笔测试支付。
+
+**集成步骤概览：**
+
+<Steps>
+  <Step title="注册 Waffo 商户账号并完成 KYB 审核">
+  </Step>
+  <Step title="在商户 Portal 获取沙盒环境 API Key">
+  </Step>
+  <Step title="选择适合您的集成方式（托管收银台 / 内嵌组件 / API 直连）">
+  </Step>
+  <Step title="参照对应集成文档完成开发">
+  </Step>
+  <Step title="在沙盒环境完成端到端测试">
+  </Step>
+  <Step title="切换至生产环境 API Key 正式上线">
+  </Step>
+</Steps>
+
+整个集成过程对于托管收银台模式通常可在 1 个工作日内完成；API 直连模式根据业务复杂度通常需要 3-5 个工作日。
+
+## 沙盒测试
+
+Waffo 提供完整的沙盒测试环境，与生产环境功能完全一致但不产生真实资金流动：
+
+- **沙盒 API 地址**：`https://sandbox-api.waffo.com`
+- **测试卡号**：使用 Waffo 提供的标准测试卡号（详见[开发者工具](/developer/tools/overview)）
+- **模拟场景**：支持模拟支付成功、各类失败（余额不足、卡号无效等）、3DS 验证等场景
+- **Webhook 测试**：沙盒环境支持配置测试 Webhook 端点，可使用 ngrok 等工具在本地接收回调
+
+建议在正式上线前，在沙盒环境完整测试以下场景：支付成功、支付失败、退款、Webhook 接收和处理。
+
+## 认证配置
+
+Waffo API 使用 API Key 进行认证，所有请求需在 HTTP Header 中携带：
+
+```text
+Authorization: Bearer YOUR_API_KEY
+```
+
+**注意事项：**
+- API Key 分为沙盒（`sk_sandbox_...`）和生产（`sk_live_...`）两套，请勿混用
+- 生产环境 API Key 需妥善保管，不得提交至代码仓库或暴露在前端代码中
+- 如怀疑 API Key 泄露，请立即在商户 Portal 轮换新密钥
+- 建议使用环境变量或密钥管理服务存储 API Key

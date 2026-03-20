@@ -1,0 +1,271 @@
+---
+title: "SDK 下载"
+description: "下载 Waffo 官方 SDK，支持 JavaScript/Node.js、iOS、Android 等主流平台，快速集成支付功能。"
+---
+
+## JavaScript SDK
+
+### 浏览器端（前端）
+
+Waffo.js 是面向浏览器的前端支付 SDK，通过 iframe 和安全令牌机制保证支付安全。
+
+**CDN 引入（推荐）：**
+
+```html
+<script src="https://js.waffo.com/v1/waffo.js"></script>
+```
+
+**npm 包：**
+
+<CodeGroup>
+```bash
+npm install @waffo/js
+# 或
+yarn add @waffo/js
+# 或
+pnpm add @waffo/js
+```
+```javascript
+import { loadWaffo } from '@waffo/js';
+
+// 异步加载 SDK
+const waffo = await loadWaffo('pk_test_xxx', {
+  locale: 'zh-CN',
+});
+```
+</CodeGroup>
+
+**React 专用封装：**
+
+<CodeGroup>
+```bash
+npm install @waffo/react
+```
+```jsx
+import { WaffoProvider, PaymentElement, useWaffo, useElements } from '@waffo/react';
+
+function App() {
+  return (
+    <WaffoProvider apiKey="pk_test_xxx">
+      <CheckoutForm />
+    </WaffoProvider>
+  );
+}
+
+function CheckoutForm() {
+  const waffo = useWaffo();
+  const elements = useElements();
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const { error } = await waffo.confirmPayment({
+      elements,
+      confirmParams: { return_url: 'https://example.com/complete' },
+    });
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <PaymentElement />
+      <button type="submit">支付</button>
+    </form>
+  );
+}
+```
+</CodeGroup>
+
+### 服务端（Node.js）
+
+<CodeGroup>
+```bash
+npm install @waffo/node
+```
+```javascript
+const Waffo = require('@waffo/node');
+
+const waffo = new Waffo('sk_test_xxx', {
+  apiVersion: '2024-01',       // 锁定 API 版本
+  timeout: 30000,               // 请求超时（毫秒）
+  maxNetworkRetries: 2,         // 网络错误自动重试次数
+  host: 'api.waffo.com',        // 自定义 API 域名（可选）
+});
+```
+</CodeGroup>
+
+## iOS SDK
+
+### 安装
+
+**Swift Package Manager（推荐）：**
+
+在 Xcode 中：`File` → `Add Package Dependencies`，输入仓库地址：
+
+```text
+https://github.com/waffo/waffo-ios
+```
+
+或在 `Package.swift` 中添加：
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/waffo/waffo-ios", from: "1.0.0")
+]
+```
+
+**CocoaPods：**
+
+<CodeGroup>
+```ruby
+# Podfile
+pod 'WaffoPayment', '~> 1.0'
+```
+```bash
+pod install
+```
+</CodeGroup>
+
+### 基本使用
+
+```swift
+import WaffoPayment
+
+// AppDelegate 或 @main 入口初始化
+WaffoPayment.configure(publishableKey: "pk_test_xxx")
+
+// 在支付视图控制器中
+class PaymentViewController: UIViewController {
+    
+    var paymentSheet: WaffoPaymentSheet?
+    
+    func startPayment(clientSecret: String) {
+        var configuration = WaffoPaymentSheet.Configuration()
+        configuration.merchantDisplayName = "Your Store Name"
+        configuration.appearance = PaymentSheet.Appearance()
+        
+        paymentSheet = WaffoPaymentSheet(
+            paymentIntentClientSecret: clientSecret,
+            configuration: configuration
+        )
+        
+        paymentSheet?.present(from: self) { [weak self] result in
+            switch result {
+            case .completed:
+                print("支付成功")
+            case .failed(let error):
+                print("支付失败: \(error.localizedDescription)")
+            case .canceled:
+                print("用户取消支付")
+            }
+        }
+    }
+}
+```
+
+### 系统要求
+
+- iOS 13.0+
+- Swift 5.5+
+- Xcode 13+
+
+## Android SDK
+
+### 安装
+
+在 `app/build.gradle` 中添加依赖：
+
+```groovy
+dependencies {
+    implementation 'com.waffo:payment:1.0.0'
+}
+```
+
+或使用 Kotlin DSL（`build.gradle.kts`）：
+
+```kotlin
+dependencies {
+    implementation("com.waffo:payment:1.0.0")
+}
+```
+
+同步 Gradle 后即可使用。
+
+### 基本使用
+
+```kotlin
+import com.waffo.payment.WaffoPaymentSheet
+import com.waffo.payment.WaffoPaymentSheetResult
+
+class CheckoutActivity : AppCompatActivity() {
+    
+    private lateinit var paymentSheet: WaffoPaymentSheet
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        paymentSheet = WaffoPaymentSheet(this, ::onPaymentResult)
+    }
+    
+    fun startPayment(clientSecret: String) {
+        val configuration = WaffoPaymentSheet.Configuration(
+            merchantDisplayName = "Your Store Name",
+        )
+        
+        paymentSheet.presentWithPaymentIntent(
+            paymentIntentClientSecret = clientSecret,
+            configuration = configuration
+        )
+    }
+    
+    private fun onPaymentResult(result: WaffoPaymentSheetResult) {
+        when (result) {
+            is WaffoPaymentSheetResult.Completed -> {
+                // 支付成功
+            }
+            is WaffoPaymentSheetResult.Failed -> {
+                // 支付失败：result.error
+            }
+            is WaffoPaymentSheetResult.Canceled -> {
+                // 用户取消
+            }
+        }
+    }
+}
+```
+
+### 系统要求
+
+- Android 5.0 (API 21)+
+- Kotlin 1.6+
+- AndroidX
+
+## 版本历史
+
+### JavaScript SDK
+
+| 版本 | 发布日期 | 主要更新 |
+|------|---------|---------|
+| `v1.4.0` | 2024-12 | 新增 TrueMoney、GrabPay 支持；优化 3DS 体验 |
+| `v1.3.0` | 2024-09 | React 18 兼容性优化；新增 `night` 主题预设 |
+| `v1.2.0` | 2024-06 | 新增 Payment Element 多列布局；性能优化 |
+| `v1.1.0` | 2024-03 | 新增韩语（ko-KR）支持；修复 Safari 兼容问题 |
+| `v1.0.0` | 2024-01 | 正式版发布 |
+
+### iOS SDK
+
+| 版本 | 发布日期 | 主要更新 |
+|------|---------|---------|
+| `v1.2.0` | 2024-12 | 支持 iOS 17 动态岛通知；Apple Pay 增强 |
+| `v1.1.0` | 2024-09 | 新增 SwiftUI 组件支持 |
+| `v1.0.0` | 2024-01 | 正式版发布 |
+
+### Android SDK
+
+| 版本 | 发布日期 | 主要更新 |
+|------|---------|---------|
+| `v1.2.0` | 2024-12 | Google Pay 体验优化；支持 Jetpack Compose |
+| `v1.1.0` | 2024-09 | 新增 Material 3 主题支持 |
+| `v1.0.0` | 2024-01 | 正式版发布 |
+
+<Note>
+建议始终使用最新版本的 SDK 以获取最新的支付方式支持和安全更新。如需升级指导，请参阅各版本的迁移指南。
+</Note>

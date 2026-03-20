@@ -1,0 +1,23 @@
+{
+  "name": "docs",
+  "version": "1.0.0",
+  "description": "Waffo 产品文档站，基于 [Mintlify](https://mintlify.com) 构建，托管于 `docs.waffo.com`。",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/waffo-caojiaqi/docs.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/waffo-caojiaqi/docs/issues"
+  },
+  "homepage": "https://github.com/waffo-caojiaqi/docs#readme",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0"
+  }
+}
